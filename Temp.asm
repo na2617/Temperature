@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	
-    global  Temp_setup
+    global  Temp_setup, Temp_ReadROM
 acs0    udata_acs   ; named variables in access ram
 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Temp_cnt2   res 1 
@@ -26,42 +26,46 @@ Temp_setup
     call    bigdelay
     return 
     
-;Temp_ReadROM  
-;    call    Write1
-;    call    Write1
-;    call    Write0
-;    call    Write0
-;    call    Write1
-;    call    Write1
-;    call    Write0
-;    call    Write0
-;    return
-;    
-;    
-;Write1
-;    movlw   0x00
-;    movwf   RE6
-;    movlw   0x19
-;    movwf   0x20
-;    call    delay
-;    return
-;    
-;Write0
-;    movlw   0x00
-;    movwf   RE6
-;    movlw   0xFF
-;    movwf   0x20
-;    call    delay
-;    movlw   0x40
-;    movwf   0x20
-;    call    delay
-;    return
-;    
-;delay
-;    decfsz  0x20, F, ACCESS
-;    bra	    delay
-;    return
-;    
+Temp_ReadROM  
+    call    Write1
+    call    Write1
+    call    Write0
+    call    Write0
+    call    Write1
+    call    Write1
+    call    Write0
+    call    Write0
+    return
+    
+    
+Write1
+    clrf    TRISE
+    movlw   0x00
+    movwf   LATE
+    movlw   0x19
+    movwf   0x20
+    call    delay
+    setf    TRISE
+    return
+    
+Write0
+    clrf    TRISE
+    movlw   0x00
+    movwf   LATE
+    movlw   0xFF
+    movwf   0x20
+    call    delay
+    movlw   0xA0
+    movwf   0x20
+    call    delay
+    setf    TRISE
+    return
+ 
+delay
+    decfsz  0x20, F, ACCESS
+    bra	    delay
+    return
+    
 ;SPI_MasterInit ; Set Clock edge to negative
 ;    bcf SSP2STAT, CKE
 ;    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
@@ -88,8 +92,8 @@ bigdelay
     movlw 0x00 ; W=0
 dloop 
     decf Temp_cnt1 ,f ; no carry when 0x00 -> 0xff
-    subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
-    bc dloop ; if carry, then loop again
+;    subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
+;    bc dloop ; if carry, then loop again
     return ; carry not set so return
 	 
 

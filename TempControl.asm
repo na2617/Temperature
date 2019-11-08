@@ -1,7 +1,7 @@
 	#include p18f87k22.inc
 
-
-	extern	Temp_setup
+	CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
+	extern	Temp_setup, Temp_ReadROM
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -26,8 +26,10 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start	   
+
+
 	call	Temp_setup
-	;call	Temp_ReadROM
+	call	Temp_ReadROM
 	bra	start
 	end
 	

@@ -1,14 +1,15 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Thu Nov 07 17:23:04 2019
+Linker Map File - Created Fri Nov 08 11:57:24 2019
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                       rst       code   0x000000    program   0x000004
                    .cinit    romdata   0x000004    program   0x000002
-                    .code       code   0x000006    program   0x00002c
-                    pdata       code   0x000032    program   0x000022
-                     main       code   0x000054    program   0x00000e
+                    .code       code   0x000006    program   0x00007c
+                    pdata       code   0x000082    program   0x000022
+                     main       code   0x0000a4    program   0x000012
+.config_300000_BUILD/DEFAULT/PRODUCTION/TEMPCON    romdata   0x300000    program   0x000001
                      acs0      udata   0x000000       data   0x000008
                    tables      udata   0x000400       data   0x000080
 
@@ -17,20 +18,25 @@ Linker Map File - Created Thu Nov 07 17:23:04 2019
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x000061      
-            98 out of 132120 program addresses used, program memory utilization is 0%
+                            0x000000    0x0000b5      
+                            0x300000    0x300000      
+            183 out of 132120 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
+             Temp_ReadROM   0x000028    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                Temp_setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                 bigdelay   0x000028    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    dloop   0x00002a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                  myTable   0x000032    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    setup   0x000054    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    start   0x00005c    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                   Write0   0x00005c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write1   0x00004a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                 bigdelay   0x00007c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    delay   0x000076    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    dloop   0x00007e    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                  myTable   0x000082    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    setup   0x0000a4    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    start   0x0000ac    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
                 Temp_cnt1   0x000000       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                 Temp_cnt2   0x000001       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
               Write0_high   0x000004       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
@@ -47,11 +53,15 @@ Linker Map File - Created Thu Nov 07 17:23:04 2019
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
                Temp_setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                 bigdelay   0x000028    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    dloop   0x00002a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                  myTable   0x000032    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    setup   0x000054    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    start   0x00005c    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+             Temp_ReadROM   0x000028    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write1   0x00004a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write0   0x00005c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    delay   0x000076    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                 bigdelay   0x00007c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    dloop   0x00007e    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                  myTable   0x000082    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    setup   0x0000a4    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    start   0x0000ac    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
                 Temp_cnt1   0x000000       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                 Temp_cnt2   0x000001       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
               Write1_high   0x000002       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm

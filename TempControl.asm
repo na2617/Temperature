@@ -1,7 +1,7 @@
 	#include p18f87k22.inc
 
 	CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-	extern	Temp_setup, Temp_ReadROM
+	extern	Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -30,7 +30,11 @@ start
 
 	call	Temp_setup
 	call	Temp_ReadROM
-	bra	start
+	call	Temp_ConvertT
+	call	Temp_ReadScratchpad
+	
+stop	
+	bra	stop
 	end
 	
 	

@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	
-    global  Temp_setup, Temp_ReadROM
+    global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad
 acs0    udata_acs   ; named variables in access ram
 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Temp_cnt2   res 1 
@@ -37,12 +37,32 @@ Temp_ReadROM
     call    Write0
     return
     
+Temp_ConvertT
+    call    Write0
+    call    Write1
+    call    Write0
+    call    Write0
+    call    Write0
+    call    Write1
+    call    Write0
+    call    Write0
+    return
+    
+Temp_ReadScratchpad
+    call    Write0
+    call    Write1
+    call    Write0
+    call    Write0
+    call    Write1
+    call    Write1
+    call    Write1
+    call    Write0
     
 Write1
     clrf    TRISE
     movlw   0x00
     movwf   LATE
-    movlw   0x19
+    movlw   0x01
     movwf   0x20
     call    delay
     setf    TRISE
@@ -52,12 +72,12 @@ Write0
     clrf    TRISE
     movlw   0x00
     movwf   LATE
-    movlw   0xFF
+    movlw   0x30
     movwf   0x20
     call    delay
-    movlw   0xA0
-    movwf   0x20
-    call    delay
+   ; movlw   0xA0
+    ;movwf   0x20
+    ;call    delay
     setf    TRISE
     return
  
@@ -92,8 +112,8 @@ bigdelay
     movlw 0x00 ; W=0
 dloop 
     decf Temp_cnt1 ,f ; no carry when 0x00 -> 0xff
-;    subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
-;    bc dloop ; if carry, then loop again
+    subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
+    bc dloop ; if carry, then loop again
     return ; carry not set so return
 	 
 

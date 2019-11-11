@@ -1,4 +1,4 @@
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  1
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -16,7 +16,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00009 
                       02986         LIST
                       00002         
-  0000                00003     global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad
+  0000                00003     global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipR
+                            OM
                       00004 acs0    udata_acs   ; named variables in access ram
 000000                00005 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 000001                00006 Temp_cnt2   res 1 
@@ -52,106 +53,153 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
 00003A EC?? F???      00036     call    Write0
 00003E EC?? F???      00037     call    Write0
 000042 0012           00038     return
-                      00039     
-000044                00040 Temp_ConvertT
+                      00039    
+000044                00040 Temp_SkipROM  
 000044 EC?? F???      00041     call    Write0
-000048 EC?? F???      00042     call    Write1
-00004C EC?? F???      00043     call    Write0
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  2
+000048 EC?? F???      00042     call    Write0
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000050 EC?? F???      00044     call    Write0
+00004C EC?? F???      00043     call    Write1
+000050 EC?? F???      00044     call    Write1
 000054 EC?? F???      00045     call    Write0
-000058 EC?? F???      00046     call    Write1
-00005C EC?? F???      00047     call    Write0
-000060 EC?? F???      00048     call    Write0
+000058 EC?? F???      00046     call    Write0
+00005C EC?? F???      00047     call    Write1
+000060 EC?? F???      00048     call    Write1
 000064 0012           00049     return
                       00050     
-000066                00051 Temp_ReadScratchpad
-000066 EC?? F???      00052     call    Write0
-00006A EC?? F???      00053     call    Write1
-00006E EC?? F???      00054     call    Write0
-000072 EC?? F???      00055     call    Write0
-000076 EC?? F???      00056     call    Write1
-00007A EC?? F???      00057     call    Write1
-00007E EC?? F???      00058     call    Write1
-000082 EC?? F???      00059     call    Write0
-                      00060     
-000086                00061 Write1
-000086 6A96           00062     clrf    TRISE
-000088 0E00           00063     movlw   0x00
-00008A 6E8D           00064     movwf   LATE
-00008C 0E01           00065     movlw   0x01
-00008E 6E20           00066     movwf   0x20
-000090 EC?? F???      00067     call    delay
-000094 6896           00068     setf    TRISE
-000096 0012           00069     return
-                      00070     
-000098                00071 Write0
-000098 6A96           00072     clrf    TRISE
-00009A 0E00           00073     movlw   0x00
-00009C 6E8D           00074     movwf   LATE
-00009E 0E30           00075     movlw   0x30
-0000A0 6E20           00076     movwf   0x20
-0000A2 EC?? F???      00077     call    delay
-                      00078    ; movlw   0xA0
-                      00079     ;movwf   0x20
-                      00080     ;call    delay
-0000A6 6896           00081     setf    TRISE
-0000A8 0012           00082     return
-                      00083  
-0000AA                00084 delay
-0000AA 2E20           00085     decfsz  0x20, F, ACCESS
-0000AC D???           00086     bra     delay
-0000AE 0012           00087     return
-                      00088     
-                      00089 ;SPI_MasterInit ; Set Clock edge to negative
-                      00090 ;    bcf SSP2STAT, CKE
-                      00091 ;    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-                      00092 ;    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-                      00093 ;    movwf SSP2CON1
-                      00094 ;    ; SDO2 output; SCK2 output
-                      00095 ;    bcf TRISE, SDO2
-                      00096 ;    bcf TRISE, SCK2
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  3
+                      00051     
+000066                00052 Temp_ConvertT
+000066 EC?? F???      00053     call    Write0
+00006A EC?? F???      00054     call    Write0
+00006E EC?? F???      00055     call    Write1
+000072 EC?? F???      00056     call    Write0
+000076 EC?? F???      00057     call    Write0
+00007A EC?? F???      00058     call    Write0
+00007E EC?? F???      00059     call    Write1
+000082 EC?? F???      00060     call    Write0
+000086 0012           00061     return
+                      00062     
+000088                00063 Temp_ReadScratchpad
+000088 EC?? F???      00064     call    Write0
+00008C EC?? F???      00065     call    Write1
+000090 EC?? F???      00066     call    Write1                  
+000094 EC?? F???      00067     call    Write1              
+000098 EC?? F???      00068     call    Write1                 
+00009C EC?? F???      00069     call    Write1                              
+0000A0 EC?? F???      00070     call    Write0                          
+0000A4 EC?? F???      00071     call    Write1
+0000A8 0012           00072     return
+                      00073     
+0000AA                00074 Temp_ReadTimeSlots
+0000AA EC?? F???      00075     call    Temp_TimeSlot
+0000AE EC?? F???      00076     call    Temp_TimeSlot
+0000B2 EC?? F???      00077     call    Temp_TimeSlot
+0000B6 EC?? F???      00078     call    Temp_TimeSlot
+0000BA EC?? F???      00079     call    Temp_TimeSlot
+0000BE EC?? F???      00080     call    Temp_TimeSlot
+0000C2 EC?? F???      00081     call    Temp_TimeSlot
+0000C6 EC?? F???      00082     call    Temp_TimeSlot
+                      00083     ;call    Temp_TimeSlot
+0000CA 0012           00084     return
+                      00085     
+                      00086     
+0000CC                00087 Temp_TimeSlot
+0000CC EC?? F???      00088     call    Write1
+0000D0 0E32           00089     movlw   0x32
+0000D2 6E20           00090     movwf   0x20
+0000D4 EC?? F???      00091     call    delay
+0000D8 0012           00092     return
+                      00093     
+                      00094 
+                      00095     
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-                      00097 ;    movf    SDO2, W
-                      00098 ;    movwf   RE6
-                      00099 ;    return
-                      00100 ;    
-                      00101 ;SPI_MasterTransmit ; Start transmission of data (held in W)
-                      00102 ;    movwf SSP2BUF
-                      00103 ;    
-                      00104 ;Wait_Transmit ; Wait for transmission to complete
-                      00105 ;    btfss PIR2, SSP2IF
-                      00106 ;    bra Wait_Transmit
-                      00107 ;    bcf PIR2, SSP2IF ; clear interrupt flag
-                      00108 ;     return
-                      00109 
-                      00110     
-0000B0                00111 bigdelay
-0000B0 0E00           00112     movlw 0x00 ; W=0
-0000B2                00113 dloop 
-0000B2 06??           00114     decf Temp_cnt1 ,f ; no carry when 0x00 -> 0xff
-0000B4 5A??           00115     subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
-0000B6 E2??           00116     bc dloop ; if carry, then loop again
-0000B8 0012           00117     return ; carry not set so return
-                      00118          
-                      00119 
-                      00120          
-                      00121     
-                      00122     
-                      00123 
-                      00124 
-                      00125     end
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  4
+0000DA                00096 Write1
+0000DA 6A96           00097     clrf    TRISE
+0000DC 0E00           00098     movlw   0x00
+0000DE 6E8D           00099     movwf   LATE
+0000E0 0E01           00100     movlw   0x01
+0000E2 6E20           00101     movwf   0x20
+0000E4 EC?? F???      00102     call    delay
+0000E8 6896           00103     setf    TRISE
+0000EA 0E33           00104     movlw   0x33
+0000EC 6E20           00105     movwf   0x20
+0000EE EC?? F???      00106     call    delay
+0000F2 0012           00107     return
+                      00108     
+0000F4                00109 Write0
+0000F4 6A96           00110     clrf    TRISE
+0000F6 0E00           00111     movlw   0x00
+0000F8 6E8D           00112     movwf   LATE
+0000FA 0E33           00113     movlw   0x33
+0000FC 6E20           00114     movwf   0x20
+0000FE EC?? F???      00115     call    delay
+                      00116    ; movlw   0xA0   These extra delay make it too long 
+                      00117     ;movwf   0x20
+                      00118     ;call    delay
+000102 6896           00119     setf    TRISE
+000104 0E01           00120     movlw   0x01
+000106 6E20           00121     movwf   0x20
+000108 EC?? F???      00122     call    delay
+00010C 0012           00123     return
+                      00124  
+00010E                00125 delay
+00010E 2E20           00126     decfsz  0x20, F, ACCESS
+000110 D???           00127     bra     delay
+000112 0012           00128     return
+                      00129     
+                      00130 ;SPI_MasterInit ; Set Clock edge to negative
+                      00131 ;    bcf SSP2STAT, CKE
+                      00132 ;    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
+                      00133 ;    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
+                      00134 ;    movwf SSP2CON1
+                      00135 ;    ; SDO2 output; SCK2 output
+                      00136 ;    bcf TRISE, SDO2
+                      00137 ;    bcf TRISE, SCK2
+                      00138 ;    movf    SDO2, W
+                      00139 ;    movwf   RE6
+                      00140 ;    return
+                      00141 ;    
+                      00142 ;SPI_MasterTransmit ; Start transmission of data (held in W)
+                      00143 ;    movwf SSP2BUF
+                      00144 ;    
+                      00145 ;Wait_Transmit ; Wait for transmission to complete
+                      00146 ;    btfss PIR2, SSP2IF
+                      00147 ;    bra Wait_Transmit
+                      00148 ;    bcf PIR2, SSP2IF ; clear interrupt flag
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00149 ;     return
+                      00150 
+                      00151     
+000114                00152 bigdelay
+000114 0E00           00153     movlw 0x00 ; W=0
+000116                00154 dloop 
+000116 06??           00155     decf Temp_cnt1 ,f ; no carry when 0x00 -> 0xff
+000118 5A??           00156     subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
+00011A E2??           00157     bc dloop ; if carry, then loop again
+00011C 0012           00158     return ; carry not set so return
+                      00159          
+                      00160 
+                      00161          
+                      00162     
+                      00163     
+                      00164 
+                      00165 
+                      00166     end
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  5
 
 
 SYMBOL TABLE
@@ -210,7 +258,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  5
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  6
 
 
 SYMBOL TABLE
@@ -269,7 +317,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  6
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  7
 
 
 SYMBOL TABLE
@@ -328,7 +376,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  7
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  8
 
 
 SYMBOL TABLE
@@ -387,7 +435,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  8
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE  9
 
 
 SYMBOL TABLE
@@ -446,7 +494,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE  9
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 10
 
 
 SYMBOL TABLE
@@ -505,7 +553,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 10
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 11
 
 
 SYMBOL TABLE
@@ -564,7 +612,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 11
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 12
 
 
 SYMBOL TABLE
@@ -623,7 +671,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 12
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 13
 
 
 SYMBOL TABLE
@@ -682,7 +730,7 @@ ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
 ECCP1CON                          00000FBB
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 13
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 14
 
 
 SYMBOL TABLE
@@ -741,7 +789,7 @@ FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
 GIE                               00000007
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 14
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 15
 
 
 SYMBOL TABLE
@@ -800,7 +848,7 @@ INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
 INT3IP                            00000001
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 15
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 16
 
 
 SYMBOL TABLE
@@ -859,7 +907,7 @@ LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
 LATC1                             00000001
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 16
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 17
 
 
 SYMBOL TABLE
@@ -918,7 +966,7 @@ LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
 LATJ4                             00000004
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 17
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 18
 
 
 SYMBOL TABLE
@@ -977,7 +1025,7 @@ OE                                00000001
 OERR                              00000001
 OERR1                             00000001
 OERR2                             00000001
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 18
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 19
 
 
 SYMBOL TABLE
@@ -1036,7 +1084,7 @@ P3M1                              00000007
 P3RSEN                            00000007
 PA3                               00000000
 PADCFG1                           00000F53
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 19
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 20
 
 
 SYMBOL TABLE
@@ -1095,7 +1143,7 @@ POSTDEC2                          00000FDD
 POSTINC0                          00000FEE
 POSTINC1                          00000FE6
 POSTINC2                          00000FDE
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 20
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 21
 
 
 SYMBOL TABLE
@@ -1154,7 +1202,7 @@ RA4                               00000004
 RA5                               00000005
 RA6                               00000006
 RA7                               00000007
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 21
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 22
 
 
 SYMBOL TABLE
@@ -1213,7 +1261,7 @@ RD6                               00000006
 RD7                               00000007
 RDPU                              00000007
 RE0                               00000000
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 22
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 23
 
 
 SYMBOL TABLE
@@ -1272,7 +1320,7 @@ ROSSLP                            00000005
 RSEN                              00000001
 RTCC                              00000004
 RTCCAL                            00000F5E
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 23
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 24
 
 
 SYMBOL TABLE
@@ -1331,7 +1379,7 @@ SOSCI                             00000001
 SOSCO                             00000000
 SOSCRUN                           00000006
 SP0                               00000000
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 24
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 25
 
 
 SYMBOL TABLE
@@ -1390,7 +1438,7 @@ SSPM2                             00000002
 SSPM3                             00000003
 SSPOV                             00000006
 SSPSTAT                           00000FC7
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 25
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 26
 
 
 SYMBOL TABLE
@@ -1449,7 +1497,7 @@ T1GSPM                            00000004
 T1GSS0                            00000000
 T1GSS1                            00000001
 T1GTM                             00000005
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 26
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 27
 
 
 SYMBOL TABLE
@@ -1508,7 +1556,7 @@ T6OUTPS3                          00000006
 T7CKI                             00000004
 T7CKPS0                           00000004
 T7CKPS1                           00000005
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 27
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 28
 
 
 SYMBOL TABLE
@@ -1567,7 +1615,7 @@ TMR1GIP                           00000002
 TMR1H                             00000FCF
 TMR1IE                            00000000
 TMR1IF                            00000000
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 28
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 29
 
 
 SYMBOL TABLE
@@ -1626,7 +1674,7 @@ TMR6ON                            00000002
 TMR7                              00000F3E
 TMR7CS0                           00000006
 TMR7CS1                           00000007
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 29
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 30
 
 
 SYMBOL TABLE
@@ -1685,7 +1733,7 @@ TRISC6                            00000006
 TRISC7                            00000007
 TRISD                             00000F95
 TRISD0                            00000000
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 30
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 31
 
 
 SYMBOL TABLE
@@ -1744,7 +1792,7 @@ TRMT1                             00000001
 TRMT2                             00000001
 TUN0                              00000000
 TUN1                              00000001
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 31
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 32
 
 
 SYMBOL TABLE
@@ -1783,9 +1831,12 @@ TXREG2                            00000F1C
 TXSTA                             00000FAC
 TXSTA1                            00000FAC
 TXSTA2                            00000F21
-Temp_ConvertT                     00000044
+Temp_ConvertT                     00000066
 Temp_ReadROM                      00000022
-Temp_ReadScratchpad               00000066
+Temp_ReadScratchpad               00000088
+Temp_ReadTimeSlots                000000AA
+Temp_SkipROM                      00000044
+Temp_TimeSlot                     000000CC
 Temp_cnt1                         00000000
 Temp_cnt2                         00000001
 Temp_setup                        00000000
@@ -1800,15 +1851,15 @@ ULPLVL                            00000005
 ULPSINK                           00000001
 ULPWU                             00000000
 VCFG0                             00000004
-VCFG1                             00000005
-VDIRMAG                           00000007
-VNCFG                             00000003
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 32
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VCFG1                             00000005
+VDIRMAG                           00000007
+VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
 W                                 00000000
@@ -1825,10 +1876,10 @@ WRERR                             00000003
 WRH                               00000003
 WRL                               00000002
 WUE                               00000001
-Write0                            00000098
+Write0                            000000F4
 Write0_high                       00000004
 Write0_low                        00000005
-Write1                            00000086
+Write1                            000000DA
 Write1_high                       00000002
 Write1_low                        00000003
 Z                                 00000002
@@ -1859,15 +1910,15 @@ _CONFIG1L                         00300000
 _CONFIG2H                         00300003
 _CONFIG2L                         00300002
 _CONFIG3H                         00300005
-_CONFIG3L                         00300004
-_CONFIG4L                         00300006
-_CONFIG5H                         00300009
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 33
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CONFIG3L                         00300004
+_CONFIG4L                         00300006
+_CONFIG5H                         00300009
 _CONFIG5L                         00300008
 _CONFIG6H                         0030000B
 _CONFIG6L                         0030000A
@@ -1918,15 +1969,15 @@ _EBRT7_ON_7L                      0000007F
 _EBRTB_OFF_7H                     000000FF
 _EBRTB_ON_7H                      000000BF
 _ECCPMX_PORTE_3H                  000000FF
-_ECCPMX_PORTH_3H                  000000FD
-_FCMEN_OFF_1H                     000000BF
-_FCMEN_ON_1H                      000000FF
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 34
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 35
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_ECCPMX_PORTH_3H                  000000FD
+_FCMEN_OFF_1H                     000000BF
+_FCMEN_ON_1H                      000000FF
 _FOSC_EC1IO_1H                    000000FC
 _FOSC_EC1_1H                      000000FD
 _FOSC_EC2IO_1H                    000000FA
@@ -1977,15 +2028,15 @@ _WDTEN_OFF_2H                     000000FC
 _WDTEN_ON_2H                      000000FE
 _WDTEN_SWDTDIS_2H                 000000FF
 _WDTPS_1024_2H                    000000AB
-_WDTPS_1048576_2H                 000000FF
-_WDTPS_128_2H                     0000009F
-_WDTPS_131072_2H                  000000C7
-MPASM 5.81                          TEMP.ASM   11-11-2019  11:39:21         PAGE 35
+MPASM 5.81                          TEMP.ASM   11-11-2019  16:55:04         PAGE 36
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_1048576_2H                 000000FF
+_WDTPS_128_2H                     0000009F
+_WDTPS_131072_2H                  000000C7
 _WDTPS_16384_2H                   000000BB
 _WDTPS_16_2H                      00000093
 _WDTPS_1_2H                       00000083
@@ -2028,9 +2079,9 @@ _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-bigdelay                          000000B0
-delay                             000000AA
-dloop                             000000B2
+bigdelay                          00000114
+delay                             0000010E
+dloop                             00000116
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed

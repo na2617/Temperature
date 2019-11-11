@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	
-    global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad
+    global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM
 acs0    udata_acs   ; named variables in access ram
 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Temp_cnt2   res 1 
@@ -36,27 +36,62 @@ Temp_ReadROM
     call    Write0
     call    Write0
     return
+   
+Temp_SkipROM  
+    call    Write0
+    call    Write0
+    call    Write1
+    call    Write1
+    call    Write0
+    call    Write0
+    call    Write1
+    call    Write1
+    return
+    
     
 Temp_ConvertT
     call    Write0
-    call    Write1
-    call    Write0
-    call    Write0
     call    Write0
     call    Write1
     call    Write0
+    call    Write0
+    call    Write0
+    call    Write1
     call    Write0
     return
     
 Temp_ReadScratchpad
     call    Write0
     call    Write1
-    call    Write0
-    call    Write0
+    call    Write1		    
+    call    Write1	        
+    call    Write1		   
+    call    Write1			        
+    call    Write0			    
     call    Write1
+    return
+    
+Temp_ReadTimeSlots
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot
+    ;call    Temp_TimeSlot
+    return
+    
+    
+Temp_TimeSlot
     call    Write1
-    call    Write1
-    call    Write0
+    movlw   0x32
+    movwf   0x20
+    call    delay
+    return
+    
+
     
 Write1
     clrf    TRISE
@@ -66,19 +101,25 @@ Write1
     movwf   0x20
     call    delay
     setf    TRISE
+    movlw   0x33
+    movwf   0x20
+    call    delay
     return
     
 Write0
     clrf    TRISE
     movlw   0x00
     movwf   LATE
-    movlw   0x30
+    movlw   0x33
     movwf   0x20
     call    delay
-   ; movlw   0xA0
+   ; movlw   0xA0   These extra delay make it too long 
     ;movwf   0x20
     ;call    delay
     setf    TRISE
+    movlw   0x01
+    movwf   0x20
+    call    delay
     return
  
 delay

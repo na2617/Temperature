@@ -11,7 +11,7 @@ Write0_low  res 1
 
     code
    
-Temp_setup
+Temp_setup	    ;reset pulse; should see a presence pulse from sensor
     clrf    TRISE
     movlw   0x00
     movwf   LATE
@@ -26,7 +26,7 @@ Temp_setup
     call    bigdelay
     return 
     
-Temp_ReadROM  
+Temp_ReadROM	    
     call    Write1
     call    Write1
     call    Write0
@@ -37,7 +37,7 @@ Temp_ReadROM
     call    Write0
     return
    
-Temp_SkipROM  
+Temp_SkipROM		;skip ROM command -> go to function command
     call    Write0
     call    Write0
     call    Write1
@@ -49,7 +49,7 @@ Temp_SkipROM
     return
     
     
-Temp_ConvertT
+Temp_ConvertT	    ;use inbuilt adc to store temp in scratchpad
     call    Write0
     call    Write0
     call    Write1
@@ -60,7 +60,7 @@ Temp_ConvertT
     call    Write0
     return
     
-Temp_ReadScratchpad
+Temp_ReadScratchpad	;start reading data from scratchoad
     call    Write0
     call    Write1
     call    Write1		    
@@ -71,24 +71,26 @@ Temp_ReadScratchpad
     call    Write1
     return
     
-Temp_ReadTimeSlots
+Temp_ReadTimeSlots	;generate time slots in which sensor gives 0s and 1s
     call    Temp_TimeSlot
     call    Temp_TimeSlot
     call    Temp_TimeSlot
     call    Temp_TimeSlot
+    call    Temp_TimeSlot  
+    call    Temp_TimeSlot
+    call    Temp_TimeSlot  
     call    Temp_TimeSlot
     call    Temp_TimeSlot
-    call    Temp_TimeSlot
-    call    Temp_TimeSlot
-    ;call    Temp_TimeSlot
     return
     
+Temp
     
-Temp_TimeSlot
-    call    Write1
+    
+Temp_TimeSlot		;creates timeslot so it is over the minimum reguired length
+    call    TimeSlotInit
     movlw   0x32
     movwf   0x20
-    call    delay
+    call    delay	;space out timeslots
     return
     
 
@@ -120,6 +122,23 @@ Write0
     movlw   0x01
     movwf   0x20
     call    delay
+    return
+    
+TimeSlotInit	    ;pulls low to start timeslot
+    clrf    TRISE
+    movlw   0x00
+    movwf   LATE
+    movlw   0x01
+    movwf   0x20
+    call    delay
+    setf    TRISE
+    movlw   0x01	;release port E, wait before sampling state to allow voltage to rise if output is 1
+    movwf   0x20
+    call    delay
+    movff   PORTE, POSTDEC2
+    movlw   0x33
+    movwf   0x20
+    call    delay	; second delay lets sensor hold the pin low/high to receive 0/1
     return
  
 delay

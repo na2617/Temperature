@@ -35,6 +35,7 @@ start
 	call	Temp_SkipROM
 	call	Temp_ReadScratchpad
 	call	Temp_ReadTimeSlots
+	lfsr    FSR2, 0x17
 	
 stop	
 	bra	stop

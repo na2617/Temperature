@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=Temp.asm TempControl.asm
+SOURCEFILES_QUOTED_IF_SPACED=Temp.asm TempControl.asm LCD.asm
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/Temp.o ${OBJECTDIR}/TempControl.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/Temp.o.d ${OBJECTDIR}/TempControl.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/Temp.o ${OBJECTDIR}/TempControl.o ${OBJECTDIR}/LCD.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/Temp.o.d ${OBJECTDIR}/TempControl.o.d ${OBJECTDIR}/LCD.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/Temp.o ${OBJECTDIR}/TempControl.o
+OBJECTFILES=${OBJECTDIR}/Temp.o ${OBJECTDIR}/TempControl.o ${OBJECTDIR}/LCD.o
 
 # Source Files
-SOURCEFILES=Temp.asm TempControl.asm
+SOURCEFILES=Temp.asm TempControl.asm LCD.asm
 
 
 CFLAGS=
@@ -110,6 +110,14 @@ ${OBJECTDIR}/TempControl.o: TempControl.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${DEP_GEN} -d "${OBJECTDIR}/TempControl.o"
 	@${FIXDEPS} "${OBJECTDIR}/TempControl.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
+${OBJECTDIR}/LCD.o: LCD.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/LCD.o.d 
+	@${RM} ${OBJECTDIR}/LCD.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/LCD.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -d__DEBUG -d__MPLAB_DEBUGGER_ICD3=1 -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/LCD.lst\" -e\"${OBJECTDIR}/LCD.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/LCD.o\" \"LCD.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/LCD.o"
+	@${FIXDEPS} "${OBJECTDIR}/LCD.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
 else
 ${OBJECTDIR}/Temp.o: Temp.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -126,6 +134,14 @@ ${OBJECTDIR}/TempControl.o: TempControl.asm  nbproject/Makefile-${CND_CONF}.mk
 	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/TempControl.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/TempControl.lst\" -e\"${OBJECTDIR}/TempControl.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/TempControl.o\" \"TempControl.asm\" 
 	@${DEP_GEN} -d "${OBJECTDIR}/TempControl.o"
 	@${FIXDEPS} "${OBJECTDIR}/TempControl.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
+	
+${OBJECTDIR}/LCD.o: LCD.asm  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}" 
+	@${RM} ${OBJECTDIR}/LCD.o.d 
+	@${RM} ${OBJECTDIR}/LCD.o 
+	@${FIXDEPS} dummy.d -e "${OBJECTDIR}/LCD.err" $(SILENT) -c ${MP_AS} $(MP_EXTRA_AS_PRE) -q -p$(MP_PROCESSOR_OPTION)  -l\"${OBJECTDIR}/LCD.lst\" -e\"${OBJECTDIR}/LCD.err\" $(ASM_OPTIONS)    -o\"${OBJECTDIR}/LCD.o\" \"LCD.asm\" 
+	@${DEP_GEN} -d "${OBJECTDIR}/LCD.o"
+	@${FIXDEPS} "${OBJECTDIR}/LCD.o.d" $(SILENT) -rsi ${MP_AS_DIR} -c18 
 	
 endif
 

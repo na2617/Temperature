@@ -73,17 +73,34 @@ Temp_ReadScratchpad	;start reading data from scratchoad
     
 Temp_ReadTimeSlots	;generate time slots in which sensor gives 0s and 1s
     call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot  
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot  
+    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
-    call    Temp_TimeSlot
+    ;call    Serial_to_Parallel
+    ;call    Temp_TimeSlot
+    ;bcf     STATUS,0	;sets carry to 0
+    nop
+    
     return
     
-Temp
+Serial_to_Parallel
+    movff   POSTINC0,   STATUS
+    ;movff   POSTINC1, 0x90
+    RLCF   0x30
+    return
+    
+    
     
     
 Temp_TimeSlot		;creates timeslot so it is over the minimum reguired length
@@ -132,10 +149,17 @@ TimeSlotInit	    ;pulls low to start timeslot
     movwf   0x20
     call    delay
     setf    TRISE
+    setf    TRISD
     movlw   0x01	;release port E, wait before sampling state to allow voltage to rise if output is 1
     movwf   0x20
     call    delay
-    movff   PORTE, POSTDEC2
+    bcf     STATUS,0	;sets carry to 0
+    btfsc   PORTD,RD0	;if RD0 is 0, go to rotate
+    bsf     STATUS,0	   ;if RD) is 1, set carry to 1
+    RRCF    0x3A,F,A	;carry-> MSB, then iterate
+    
+    
+    ;movff   PORTD, POSTDEC2
     movlw   0x33
     movwf   0x20
     call    delay	; second delay lets sensor hold the pin low/high to receive 0/1

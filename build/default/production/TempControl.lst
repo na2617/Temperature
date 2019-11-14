@@ -1,4 +1,4 @@
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  1
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -17,8 +17,8 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       02986         LIST
                       00002 
                       00003         CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-  0000                00004         extern  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_S
-                            kipROM
+  0000                00004             extern      Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots
+                            , Temp_SkipROM, LCD_Setup, LCD_Write_Message, LCD_Write_Dec
                       00005         
                       00006 acs0    udata_acs   ; reserve data space in access ram
 000000                00007 counter     res 1   ; reserve one byte for a counter variable
@@ -33,43 +33,79 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00016 pdata   code    ; a section of programme memory for storing data
                       00017         ; ******* myTable, da.................................................ta in programme memory, an
                             d its length *****
-000000 3D38 3D3D 3D3D 00018 myTable data        "8==============D8==============D\n"
-       3D3D 3D3D 3D3D 
-       3D3D 443D 3D38 
-       3D3D 3D3D 3D3D 
-       3D3D 3D3D 3D3D 
-       443D 000A 
-  0020                00019         constant    myTable_l=.32       ; length of data
+000000 2054 0A3D      00018 myTable data        "T =\n"
+  0004                00019         constant    myTable_l=.4        ; length of data
                       00020         
                       00021 main    code
                       00022         ; ******* Programme FLASH read Setup Code ***********************
-000000 9C7F           00023 setup   bcf     EECON1, CFGS    ; point to Flash program memory  
-000002 8E7F           00024         bsf     EECON1, EEPGD   ; access Flash program memory
-000004 EF?? F???      00025         goto    start
-                      00026         
-                      00027         ; ******* Main programme ****************************************
-000008                00028 start      
-                      00029 
-                      00030 
-000008 EC?? F???      00031         call    Temp_setup
-00000C EC?? F???      00032         call    Temp_SkipROM
-000010 EC?? F???      00033         call    Temp_ConvertT
-000014 EC?? F???      00034         call    Temp_setup
-000018 EC?? F???      00035         call    Temp_SkipROM
-00001C EC?? F???      00036         call    Temp_ReadScratchpad
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  2
+000000 9C7F           00023 setup   bcf     EECON1, CFGS    ; point to Flash program memory
+                      00024         ;call   LCD_Setup       ; setup LCD
+000002 8E7F           00025         bsf     EECON1, EEPGD   ; access Flash program memory
+000004 EF?? F???      00026         goto    start
+                      00027         
+                      00028         ; ******* Main programme ****************************************
+000008                00029 start
+                      00030         ;start  lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
+                      00031 ;       movlw   upper(myTable)  ; address of data in PM
+                      00032 ;       movwf   TBLPTRU         ; load upper bits to TBLPTRU
+                      00033 ;       movlw   high(myTable)   ; address of data in PM
+                      00034 ;       movwf   TBLPTRH         ; load high byte to TBLPTRH
+                      00035 ;       movlw   low(myTable)    ; address of data in PM
+                      00036 ;       movwf   TBLPTRL         ; load low byte to TBLPTRL
+                      00037 ;       movlw   myTable_l       ; bytes to read
+                      00038 ;       movwf   counter         ; our counter register
+                      00039 ;loop   tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
+                      00040 ;       movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
+                      00041 ;       decfsz  counter         ; count down to zero
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-000020 EC?? F???      00037         call    Temp_ReadTimeSlots
-000024 EE20 F017      00038         lfsr    FSR2, 0x17
-                      00039         
-000028                00040 stop    
-000028 D???           00041         bra     stop
-                      00042         end
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  3
+                      00042 ;       bra     loop            ; keep going until finished
+                      00043 ;       
+                      00044 ;       movlw   myTable_l-1     ; output message to LCD (leave out "\n")
+                      00045 ;       lfsr    FSR2, myArray
+                      00046 ;       call    LCD_Write_Message   
+                      00047 
+                      00048 
+000008 EC?? F???      00049         call    Temp_setup
+00000C EC?? F???      00050         call    Temp_SkipROM
+000010 EC?? F???      00051         call    Temp_ConvertT
+000014 EC?? F???      00052         call    Temp_setup
+000018 EC?? F???      00053         call    Temp_SkipROM
+00001C EC?? F???      00054         call    Temp_ReadScratchpad
+000020 EC?? F???      00055         call    Temp_ReadTimeSlots
+000024 EE20 F017      00056         lfsr    FSR2, 0x17
+000028 EE00 F03A      00057         lfsr    FSR0, 0x3A
+                      00058         ;clrf   TRISJ
+                      00059         ;movlw  0x31
+                      00060         ;movwf  PORTJ
+00002C EC?? F???      00061         call    LCD_Write_Dec
+                      00062         
+                      00063         
+                      00064 ;SPI_MasterInit ; Set Clock edge to negative
+                      00065 ;       bcf SSP2STAT, CKE
+                      00066 ;       ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
+                      00067 ;       movlw (1<<SSPEN)|(1<<CKP)|(0x02)
+                      00068 ;       movwf SSP2CON1
+                      00069 ;       ; SDO2 output; SCK2 output
+                      00070 ;       bcf TRISD, SDO2
+                      00071 ;       bcf TRISD, SCK2
+                      00072 ;       return
+                      00073 ;SPI_MasterTransmit ; Start transmission of data (held in W)
+                      00074 ;       movwf SSP2BUF
+                      00075 ;       Wait_Transmit ; Wait for transmission to complete
+                      00076 ;       btfss PIR2, SSP2IF
+                      00077 ;       bra Wait_Transmit
+                      00078 ;       bcf PIR2, SSP2IF ; clear interrupt flag
+                      00079 ;       return
+                      00080         
+000030                00081 stop    
+000030 D???           00082         bra     stop
+                      00083         end
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  3
 
 
 SYMBOL TABLE
@@ -128,7 +164,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  4
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  4
 
 
 SYMBOL TABLE
@@ -187,7 +223,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  5
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  5
 
 
 SYMBOL TABLE
@@ -246,7 +282,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  6
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  6
 
 
 SYMBOL TABLE
@@ -305,7 +341,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  7
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  7
 
 
 SYMBOL TABLE
@@ -364,7 +400,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  8
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  8
 
 
 SYMBOL TABLE
@@ -423,7 +459,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE  9
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE  9
 
 
 SYMBOL TABLE
@@ -482,7 +518,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 10
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 10
 
 
 SYMBOL TABLE
@@ -541,7 +577,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 11
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 11
 
 
 SYMBOL TABLE
@@ -600,7 +636,7 @@ ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
 ECCP1CON                          00000FBB
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 12
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 12
 
 
 SYMBOL TABLE
@@ -659,7 +695,7 @@ FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
 GIE                               00000007
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 13
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 13
 
 
 SYMBOL TABLE
@@ -718,7 +754,7 @@ INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
 INT3IP                            00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 14
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 14
 
 
 SYMBOL TABLE
@@ -777,7 +813,7 @@ LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
 LATC1                             00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 15
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 15
 
 
 SYMBOL TABLE
@@ -836,7 +872,7 @@ LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
 LATJ4                             00000004
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 16
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 16
 
 
 SYMBOL TABLE
@@ -846,6 +882,9 @@ LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
 LB                                00000006
+LCD_Setup                         00000000
+LCD_Write_Dec                     00000000
+LCD_Write_Message                 00000000
 LVDIE                             00000002
 LVDIF                             00000002
 LVDIP                             00000002
@@ -892,15 +931,15 @@ ODCON1                            00000F29
 ODCON2                            00000F28
 ODCON3                            00000F27
 OE                                00000001
-OERR                              00000001
-OERR1                             00000001
-OERR2                             00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 17
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 17
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+OERR                              00000001
+OERR1                             00000001
+OERR2                             00000001
 OSC1                              00000007
 OSC2                              00000006
 OSCCON                            00000FD3
@@ -951,15 +990,15 @@ P3DC5                             00000005
 P3DC6                             00000006
 P3M0                              00000006
 P3M1                              00000007
-P3RSEN                            00000007
-PA3                               00000000
-PADCFG1                           00000F53
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 18
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 18
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+P3RSEN                            00000007
+PA3                               00000000
+PADCFG1                           00000F53
 PB1                               00000007
 PB3                               00000005
 PC                                00000FF9
@@ -1010,15 +1049,15 @@ PORTJ                             00000F88
 POSTDEC0                          00000FED
 POSTDEC1                          00000FE5
 POSTDEC2                          00000FDD
-POSTINC0                          00000FEE
-POSTINC1                          00000FE6
-POSTINC2                          00000FDE
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 19
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 19
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
+POSTINC2                          00000FDE
 PR10                              00000F34
 PR12                              00000F31
 PR2                               00000FCB
@@ -1069,15 +1108,15 @@ RA1                               00000001
 RA2                               00000002
 RA3                               00000003
 RA4                               00000004
-RA5                               00000005
-RA6                               00000006
-RA7                               00000007
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 20
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 20
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1128,15 +1167,15 @@ RD3                               00000003
 RD4                               00000004
 RD5                               00000005
 RD6                               00000006
-RD7                               00000007
-RDPU                              00000007
-RE0                               00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 21
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 21
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RD7                               00000007
+RDPU                              00000007
+RE0                               00000000
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
@@ -1187,15 +1226,15 @@ RODIV3                            00000003
 ROON                              00000007
 ROSEL                             00000004
 ROSSLP                            00000005
-RSEN                              00000001
-RTCC                              00000004
-RTCCAL                            00000F5E
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 22
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 22
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+RSEN                              00000001
+RTCC                              00000004
+RTCCAL                            00000F5E
 RTCCFG                            00000F5F
 RTCCIE                            00000000
 RTCCIF                            00000000
@@ -1246,15 +1285,15 @@ SMP                               00000007
 SOSCEN                            00000003
 SOSCGO                            00000003
 SOSCI                             00000001
-SOSCO                             00000000
-SOSCRUN                           00000006
-SP0                               00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 23
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 23
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SOSCO                             00000000
+SOSCRUN                           00000006
+SP0                               00000000
 SP1                               00000001
 SP2                               00000002
 SP3                               00000003
@@ -1305,15 +1344,15 @@ SSPIP                             00000003
 SSPM0                             00000000
 SSPM1                             00000001
 SSPM2                             00000002
-SSPM3                             00000003
-SSPOV                             00000006
-SSPSTAT                           00000FC7
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 24
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 24
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000FC7
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
@@ -1364,15 +1403,15 @@ T1GGO                             00000003
 T1GGO_NOT_T1DONE                  00000003
 T1GPOL                            00000006
 T1GSPM                            00000004
-T1GSS0                            00000000
-T1GSS1                            00000001
-T1GTM                             00000005
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 25
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 25
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T1GSS0                            00000000
+T1GSS1                            00000001
+T1GTM                             00000005
 T1GVAL                            00000002
 T2CKPS0                           00000000
 T2CKPS1                           00000001
@@ -1423,15 +1462,15 @@ T6OUTPS0                          00000003
 T6OUTPS1                          00000004
 T6OUTPS2                          00000005
 T6OUTPS3                          00000006
-T7CKI                             00000004
-T7CKPS0                           00000004
-T7CKPS1                           00000005
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 26
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 26
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+T7CKI                             00000004
+T7CKPS0                           00000004
+T7CKPS1                           00000005
 T7CON                             00000F3D
 T7G                               00000001
 T7GCON                            00000F3C
@@ -1482,15 +1521,15 @@ TMR1GE                            00000007
 TMR1GIE                           00000002
 TMR1GIF                           00000002
 TMR1GIP                           00000002
-TMR1H                             00000FCF
-TMR1IE                            00000000
-TMR1IF                            00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 27
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 27
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR1H                             00000FCF
+TMR1IE                            00000000
+TMR1IF                            00000000
 TMR1IP                            00000000
 TMR1L                             00000FCE
 TMR1MD                            00000001
@@ -1541,15 +1580,15 @@ TMR6IF                            00000002
 TMR6IP                            00000002
 TMR6MD                            00000004
 TMR6ON                            00000002
-TMR7                              00000F3E
-TMR7CS0                           00000006
-TMR7CS1                           00000007
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 28
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 28
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TMR7                              00000F3E
+TMR7CS0                           00000006
+TMR7CS1                           00000007
 TMR7GE                            00000007
 TMR7GIE                           00000007
 TMR7GIF                           00000007
@@ -1600,15 +1639,15 @@ TRISC3                            00000003
 TRISC4                            00000004
 TRISC5                            00000005
 TRISC6                            00000006
-TRISC7                            00000007
-TRISD                             00000F95
-TRISD0                            00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 29
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 29
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRISC7                            00000007
+TRISD                             00000F95
+TRISD0                            00000000
 TRISD1                            00000001
 TRISD2                            00000002
 TRISD3                            00000003
@@ -1659,15 +1698,15 @@ TRISJ6                            00000006
 TRISJ7                            00000007
 TRMT                              00000001
 TRMT1                             00000001
-TRMT2                             00000001
-TUN0                              00000000
-TUN1                              00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 30
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 30
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+TRMT2                             00000001
+TUN0                              00000000
+TUN1                              00000001
 TUN2                              00000002
 TUN3                              00000003
 TUN4                              00000004
@@ -1718,15 +1757,15 @@ ULPLVL                            00000005
 ULPSINK                           00000001
 ULPWU                             00000000
 VCFG0                             00000004
-VCFG1                             00000005
-VDIRMAG                           00000007
-VNCFG                             00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 31
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 31
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+VCFG1                             00000005
+VDIRMAG                           00000007
+VNCFG                             00000003
 VREF_MINUS                        00000002
 VREF_PLUS                         00000003
 W                                 00000000
@@ -1777,15 +1816,15 @@ _CONFIG5H                         00300009
 _CONFIG5L                         00300008
 _CONFIG6H                         0030000B
 _CONFIG6L                         0030000A
-_CONFIG7H                         0030000D
-_CONFIG7L                         0030000C
-_CP0_OFF_5L                       000000FF
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 32
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 32
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_CONFIG7H                         0030000D
+_CONFIG7L                         0030000C
+_CP0_OFF_5L                       000000FF
 _CP0_ON_5L                        000000FE
 _CP1_OFF_5L                       000000FF
 _CP1_ON_5L                        000000FD
@@ -1836,15 +1875,15 @@ _FCMEN_ON_1H                      000000FF
 _FOSC_EC1IO_1H                    000000FC
 _FOSC_EC1_1H                      000000FD
 _FOSC_EC2IO_1H                    000000FA
-_FOSC_EC2_1H                      000000FB
-_FOSC_EC3IO_1H                    000000F4
-_FOSC_EC3_1H                      000000F5
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 33
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 33
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_FOSC_EC2_1H                      000000FB
+_FOSC_EC3IO_1H                    000000F4
+_FOSC_EC3_1H                      000000F5
 _FOSC_HS1_1H                      000000F3
 _FOSC_HS2_1H                      000000F2
 _FOSC_INTIO1_1H                   000000F9
@@ -1895,15 +1934,15 @@ _WDTPS_131072_2H                  000000C7
 _WDTPS_16384_2H                   000000BB
 _WDTPS_16_2H                      00000093
 _WDTPS_1_2H                       00000083
-_WDTPS_2048_2H                    000000AF
-_WDTPS_256_2H                     000000A3
-_WDTPS_262144_2H                  000000CB
-MPASM 5.81                   TEMPCONTROL.ASM   11-13-2019  16:35:25         PAGE 34
+MPASM 5.81                   TEMPCONTROL.ASM   11-14-2019  17:17:54         PAGE 34
 
 
 SYMBOL TABLE
   LABEL                             VALUE 
 
+_WDTPS_2048_2H                    000000AF
+_WDTPS_256_2H                     000000A3
+_WDTPS_262144_2H                  000000CB
 _WDTPS_2_2H                       00000087
 _WDTPS_32768_2H                   000000BF
 _WDTPS_32_2H                      00000097
@@ -1944,10 +1983,10 @@ counter                           00000000
 delay_count                       00000001
 myArray                           00000400
 myTable                           00000000
-myTable_l                         00000020
+myTable_l                         00000004
 setup                             00000000
 start                             00000008
-stop                              00000028
+stop                              00000030
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed

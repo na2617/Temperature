@@ -1,16 +1,18 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Wed Nov 13 16:59:32 2019
+Linker Map File - Created Thu Nov 14 17:24:40 2019
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
                 ---------  ---------  ---------  ---------  ---------
                       rst       code   0x000000    program   0x000004
                    .cinit    romdata   0x000004    program   0x000002
-                    .code       code   0x000006    program   0x000148
-                     main       code   0x00014e    program   0x00002a
-                    pdata       code   0x000178    program   0x000022
+                      LCD       code   0x000006    program   0x0001ea
+                    .code       code   0x0001f0    program   0x000154
+                     main       code   0x000344    program   0x000032
+                    pdata       code   0x000376    program   0x000004
 .config_300000_BUILD/DEFAULT/DEBUG/TEMPCONTROL.    romdata   0x300000    program   0x000001
-                     acs0      udata   0x000000       data   0x000008
+                     acs0      udata   0x000000       data   0x00000f
+                  acs_ovr      udata   0x00000f       data   0x000003
                    tables      udata   0x000400       data   0x000080
 
 
@@ -18,33 +20,58 @@ Linker Map File - Created Wed Nov 13 16:59:32 2019
                               Program Memory Usage 
                                Start         End      
                            ---------   ---------      
-                            0x000000    0x000199      
+                            0x000000    0x000379      
                             0x300000    0x300000      
-            411 out of 132120 program addresses used, program memory utilization is 0%
+            891 out of 132120 program addresses used, program memory utilization is 0%
 
 
 
                               Symbols - Sorted by Name
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-                     Temp   0x0000d6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-            Temp_ConvertT   0x00006c    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             Temp_ReadROM   0x000028    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-      Temp_ReadScratchpad   0x00008e    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-       Temp_ReadTimeSlots   0x0000b0    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             Temp_SkipROM   0x00004a    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-            Temp_TimeSlot   0x0000d6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-               Temp_setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             TimeSlotInit   0x000118    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                   Write0   0x0000fe    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                   Write1   0x0000e4    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                 bigdelay   0x000144    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    delay   0x00013e    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    dloop   0x000146    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                  myTable   0x000178    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    setup   0x00014e    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    start   0x000156    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                     stop   0x000176    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                LCD_Clear   0x00015a    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+               LCD_Enable   0x0001a0    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_Hex_Nib   0x000132    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+         LCD_Loop_message   0x00014e    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_Multi   0x0000f0    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+          LCD_Send_Byte_D   0x00017e    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+          LCD_Send_Byte_I   0x000162    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_Setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+            LCD_Write_Dec   0x00005c    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+            LCD_Write_Hex   0x000128    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+        LCD_Write_Message   0x000146    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_delay   0x0001e6    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+             LCD_delay_ms   0x0001c4    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+           LCD_delay_x4us   0x0001d2    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+       Serial_to_Parallel   0x0002be    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+            Temp_ConvertT   0x000256    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             Temp_ReadROM   0x000212    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+      Temp_ReadScratchpad   0x000278    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+       Temp_ReadTimeSlots   0x00029a    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             Temp_SkipROM   0x000234    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+            Temp_TimeSlot   0x0002c6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+               Temp_setup   0x0001f0    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             TimeSlotInit   0x000308    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write0   0x0002ee    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write1   0x0002d4    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                 bigdelay   0x00033a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    delay   0x000334    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    dloop   0x00033c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   lcdlp1   0x0001e8    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                   lcdlp2   0x0001c6    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                  myTable   0x000376    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    setup   0x000344    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    start   0x00034c    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                     stop   0x000374    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                LCD_cnt_h   0x000009       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_cnt_l   0x000008       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+               LCD_cnt_ms   0x00000a       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_counter   0x00000c       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+             LCD_counter2   0x000010       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_hex_tmp   0x00000f       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                    LCD_k   0x00000d       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                  LCD_len   0x000011       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                  LCD_tmp   0x00000b       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
                 Temp_cnt1   0x000000       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                 Temp_cnt2   0x000001       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
               Write0_high   0x000004       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
@@ -60,24 +87,40 @@ Linker Map File - Created Wed Nov 13 16:59:32 2019
                               Symbols - Sorted by Address
                      Name    Address   Location    Storage File                     
                 ---------  ---------  ---------  --------- ---------                
-               Temp_setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             Temp_ReadROM   0x000028    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             Temp_SkipROM   0x00004a    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-            Temp_ConvertT   0x00006c    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-      Temp_ReadScratchpad   0x00008e    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-       Temp_ReadTimeSlots   0x0000b0    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                     Temp   0x0000d6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-            Temp_TimeSlot   0x0000d6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                   Write1   0x0000e4    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                   Write0   0x0000fe    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-             TimeSlotInit   0x000118    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    delay   0x00013e    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                 bigdelay   0x000144    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    dloop   0x000146    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
-                    setup   0x00014e    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                    start   0x000156    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                     stop   0x000176    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
-                  myTable   0x000178    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                LCD_Setup   0x000006    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+            LCD_Write_Dec   0x00005c    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_Multi   0x0000f0    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+            LCD_Write_Hex   0x000128    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_Hex_Nib   0x000132    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+        LCD_Write_Message   0x000146    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+         LCD_Loop_message   0x00014e    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_Clear   0x00015a    program     extern H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+          LCD_Send_Byte_I   0x000162    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+          LCD_Send_Byte_D   0x00017e    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+               LCD_Enable   0x0001a0    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+             LCD_delay_ms   0x0001c4    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                   lcdlp2   0x0001c6    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+           LCD_delay_x4us   0x0001d2    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_delay   0x0001e6    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                   lcdlp1   0x0001e8    program     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+               Temp_setup   0x0001f0    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             Temp_ReadROM   0x000212    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             Temp_SkipROM   0x000234    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+            Temp_ConvertT   0x000256    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+      Temp_ReadScratchpad   0x000278    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+       Temp_ReadTimeSlots   0x00029a    program     extern H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+       Serial_to_Parallel   0x0002be    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+            Temp_TimeSlot   0x0002c6    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write1   0x0002d4    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                   Write0   0x0002ee    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+             TimeSlotInit   0x000308    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    delay   0x000334    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                 bigdelay   0x00033a    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    dloop   0x00033c    program     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
+                    setup   0x000344    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                    start   0x00034c    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                     stop   0x000374    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                  myTable   0x000376    program     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
                 Temp_cnt1   0x000000       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                 Temp_cnt2   0x000001       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
               Write1_high   0x000002       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
@@ -86,6 +129,15 @@ Linker Map File - Created Wed Nov 13 16:59:32 2019
                Write0_low   0x000005       data     static H:\Microprocessors\Project Temp\TempControl.X\Temp.asm
                   counter   0x000006       data     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
               delay_count   0x000007       data     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
+                LCD_cnt_l   0x000008       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                LCD_cnt_h   0x000009       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+               LCD_cnt_ms   0x00000a       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                  LCD_tmp   0x00000b       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_counter   0x00000c       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                    LCD_k   0x00000d       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+              LCD_hex_tmp   0x00000f       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+             LCD_counter2   0x000010       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
+                  LCD_len   0x000011       data     static H:\Microprocessors\Project Temp\TempControl.X\LCD.asm
                   myArray   0x000400       data     static H:\Microprocessors\Project Temp\TempControl.X\TempControl.asm
 
 

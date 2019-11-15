@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 
-    global  LCD_Setup, LCD_Write_Message, LCD_Write_Hex, LCD_Clear, LCD_Write_Dec
+    global  LCD_Setup, LCD_Write_Message, LCD_Write_Hex, LCD_Clear, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Send_Byte_D	
 
 acs0    udata_acs   ; named variables in access ram
 LCD_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
@@ -11,7 +11,7 @@ LCD_counter res 1   ; reserve 1 byte for counting through nessage
 LCD_k	    res 2
 acs_ovr	access_ovr
 LCD_hex_tmp res 1   ; reserve 1 byte for variable LCD_hex_tmp	
-
+Temp_Half   res 1   ;use as carry bit to output 0.5 degree increments
 LCD_counter2 res 1   ; reserve 1 byte for counting through nessage
 LCD_len	    res 1
 	constant    LCD_E=5	; LCD enable bit
@@ -73,7 +73,11 @@ LCD_Write_Dec
 	movlw	0x0
 	movwf	0x20
 	;movff	ADRESH, 0x20
+	clrf	STATUS
+	rrcf	0x3A, F,A	
 	movff	0x3A, 0x21	;moving voltage in hex to 0x20, 0x21 location
+	btfsc	STATUS, 0
+	bsf	Temp_Half, 0
 	;movlw	0x04		;using fixed values of voltage for testing
 	;movwf	0x20
 	;movlw	0xD2
@@ -149,6 +153,21 @@ LCD_Multi
 	movwf	0x11
 	movff	0x50, 0x10
 
+	return
+	
+LCD_.5
+	;bsf	Temp_Half, 0
+	;clrf	Temp_Half
+	btfsc   Temp_Half, 0	;if 0th bit was 1, output an extra 0.5 degrees
+	call	LCD_Write_Message
+	return
+	
+LCD_1
+	;bsf	Temp_Half, 0
+	;clrf	Temp_Half
+	btfsc   Temp_Half, 0	;if 0th bit was 1, output an extra 0.5 degrees
+	return
+	call	LCD_Write_Message
 	return
 	
 LCD_Write_Hex	    ; Writes byte stored in W as hex

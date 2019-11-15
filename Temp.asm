@@ -155,8 +155,8 @@ TimeSlotInit	    ;pulls low to start timeslot
     call    delay
     bcf     STATUS,0	;sets carry to 0
     btfsc   PORTD,RD0	;if RD0 is 0, go to rotate
-    bsf     STATUS,0	   ;if RD) is 1, set carry to 1
-    RRCF    0x3A,F,A	;carry-> MSB, then iterate
+    bsf     STATUS,0	   ;if RD0 is 1, set carry to 1
+    rrcf    0x3A,F,A	;carry-> MSB, then iterate
     
     
     ;movff   PORTD, POSTDEC2

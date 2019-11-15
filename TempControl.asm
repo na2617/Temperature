@@ -1,7 +1,7 @@
 	#include p18f87k22.inc
 
 	CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-	    extern	Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM, LCD_Setup, LCD_Write_Message, LCD_Write_Dec
+	    extern	Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM, LCD_Setup, LCD_Write_Message, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Send_Byte_D	
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
@@ -15,37 +15,22 @@ rst	code	0    ; reset vector
 
 pdata	code    ; a section of programme memory for storing data
 	; ******* myTable, da.................................................ta in programme memory, and its length *****
-myTable data	    "T =\n"
-	constant    myTable_l=.4	; length of data
+myTable data	    "T = \n"
+	constant    myTable_l=.5	; length of data
+myTabl3 data	    ".5°C\n"
+	constant    myTable_2 = .5
+myTabl4 data	    ".0°C\n"
+	constant    myTable_3 = .5
 	
 main	code
 	; ******* Programme FLASH read Setup Code ***********************
 setup	bcf	EECON1, CFGS	; point to Flash program memory
-	;call	LCD_Setup	; setup LCD
+	call	LCD_Setup	; setup LCD
 	bsf	EECON1, EEPGD 	; access Flash program memory
 	goto	start
 	
 	; ******* Main programme ****************************************
 start
-	;start 	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
-;	movlw	upper(myTable)	; address of data in PM
-;	movwf	TBLPTRU		; load upper bits to TBLPTRU
-;	movlw	high(myTable)	; address of data in PM
-;	movwf	TBLPTRH		; load high byte to TBLPTRH
-;	movlw	low(myTable)	; address of data in PM
-;	movwf	TBLPTRL		; load low byte to TBLPTRL
-;	movlw	myTable_l	; bytes to read
-;	movwf 	counter		; our counter register
-;loop 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
-;	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
-;	decfsz	counter		; count down to zero
-;	bra	loop		; keep going until finished
-;	
-;	movlw	myTable_l-1	; output message to LCD (leave out "\n")
-;	lfsr	FSR2, myArray
-;	call	LCD_Write_Message   
-
-
 	call	Temp_setup
 	call	Temp_SkipROM
 	call	Temp_ConvertT
@@ -59,6 +44,74 @@ start
 	;movlw	0x31
 	;movwf	PORTJ
 	call	LCD_Write_Dec
+	;start of LCD code
+	; Output T =
+	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
+	movlw	upper(myTable)	; address of data in PM
+	movwf	TBLPTRU		; load upper bits to TBLPTRU
+	movlw	high(myTable)	; address of data in PM
+	movwf	TBLPTRH		; load high byte to TBLPTRH
+	movlw	low(myTable)	; address of data in PM
+	movwf	TBLPTRL		; load low byte to TBLPTRL
+	movlw	myTable_l	; bytes to read
+	movwf 	counter		; our counter register
+loop 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+	decfsz	counter		; count down to zero
+	bra	loop		; keep going until finished
+	movlw	myTable_l-1	; output message to LCD (leave out "\n")
+	lfsr	FSR2, myArray
+	call	LCD_Write_Message   
+	
+	movlw	0x30
+	addwf	0x35, W
+	call	LCD_Send_Byte_D	
+	movlw	0x30
+	addwf	0x36, W
+	call	LCD_Send_Byte_D	
+	
+	
+	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
+	movlw	upper(myTabl4)	; address of data in PM
+	movwf	TBLPTRU		; load upper bits to TBLPTRU
+	movlw	high(myTabl4)	; address of data in PM
+	movwf	TBLPTRH		; load high byte to TBLPTRH
+	movlw	low(myTabl4)	; address of data in PM
+	movwf	TBLPTRL		; load low byte to TBLPTRL
+	movlw	myTable_3	; bytes to read
+	movwf 	counter		; our counter register
+loop2 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+	decfsz	counter		; count down to zero
+	bra	loop2		; keep going until finished
+	
+	movlw	myTable_3-1	; output message to LCD (leave out "\n")
+	lfsr	FSR2, myArray
+	call	LCD_1
+	
+	
+	
+	
+	;output .5 degreesC
+	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
+	movlw	upper(myTabl3)	; address of data in PM
+	movwf	TBLPTRU		; load upper bits to TBLPTRU
+	movlw	high(myTabl3)	; address of data in PM
+	movwf	TBLPTRH		; load high byte to TBLPTRH
+	movlw	low(myTabl3)	; address of data in PM
+	movwf	TBLPTRL		; load low byte to TBLPTRL
+	movlw	myTable_2	; bytes to read
+	movwf 	counter		; our counter register
+loop1 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
+	movff	TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0	
+	decfsz	counter		; count down to zero
+	bra	loop1		; keep going until finished
+	
+	movlw	myTable_2-1	; output message to LCD (leave out "\n")
+	lfsr	FSR2, myArray
+	call	LCD_.5
+	
+	
 	
 	
 	

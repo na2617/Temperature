@@ -101,12 +101,12 @@ LCD_Write_Dec
 	
 	clrf	STATUS
 	movf	0x30, W
-	addwfc	0x41, W		    ;adding and storing results in conescutive FRs
-	addwfc	0x51, W 
+	addwf	0x41, W		    ;adding and storing results in conescutive FRs
+	addwf	0x51, W 
 	movwf	0x12
 	movf	0x40, W
-	addwfc	0x50, W
-	addwfc	0x56, W
+	addwf	0x50, W
+	addwf	0x56, W
 	movwf	0x11
 	movff	0x55, 0x10
 	movf	0x10, W
@@ -146,10 +146,10 @@ LCD_Multi
 	
 	clrf	STATUS
 	movf	0x30, W
-	addwfc	0x41, W		    ;adding and storing results in conescutive FRs 
+	addwf	0x41, W		    ;adding and storing results in conescutive FRs 
 	movwf	0x12
 	movf	0x40, W
-	addwfc	0x51, W
+	addwf	0x51, W
 	movwf	0x11
 	movff	0x50, 0x10
 
@@ -211,6 +211,8 @@ LCD_Loop_message
 LCD_Clear
 	movlw	b'00000001'	; display clear
 	call	LCD_Send_Byte_I
+	movlw	.2		; wait 2ms
+	call	LCD_delay_ms
 	return
 
 LCD_Send_Byte_I		    ; Transmits byte stored in W to instruction reg

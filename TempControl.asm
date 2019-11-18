@@ -1,12 +1,17 @@
 	#include p18f87k22.inc
 
 	CONFIG  XINST = OFF           ; Extended Instruction Set (Disabled)
-	    extern	Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM, LCD_Setup, LCD_Write_Message, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Send_Byte_D	
+    extern  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT 
+    extern  Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM, LCD_Setup
+    extern  LCD_Write_Message, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Send_Byte_D
+    extern  LCD_Clear	
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable
 delay_count res 1   ; reserve one byte for counter in the delay routine
-
+Char1	res 1
+Char2	res 1
+	
 tables	udata	0x400    ; reserve data anywhere in RAM (here at 0x400)
 myArray res 0x80    ; reserve 128 bytes for message data
 
@@ -14,7 +19,7 @@ rst	code	0    ; reset vector
 	goto	setup
 
 pdata	code    ; a section of programme memory for storing data
-	; ******* myTable, da.................................................ta in programme memory, and its length *****
+	; ******* myTable, data in programme memory, and its length *****
 myTable data	    "T = \n"
 	constant    myTable_l=.5	; length of data
 myTabl3 data	    ".5°C\n"
@@ -31,19 +36,13 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start
-	call	Temp_setup
-	call	Temp_SkipROM
-	call	Temp_ConvertT
-	call	Temp_setup
-	call	Temp_SkipROM
-	call	Temp_ReadScratchpad
-	call	Temp_ReadTimeSlots
+	call	Temp_Read
 	lfsr    FSR2, 0x17
 	lfsr	FSR0, 0x3A
-	;clrf	TRISJ
-	;movlw	0x31
-	;movwf	PORTJ
+	call	LCD_Clear
 	call	LCD_Write_Dec
+	movff	0x35, Char1
+	movff	0x36, Char2
 	;start of LCD code
 	; Output T =
 	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
@@ -64,10 +63,10 @@ loop 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 	call	LCD_Write_Message   
 	
 	movlw	0x30
-	addwf	0x35, W
+	addwf	Char1, W
 	call	LCD_Send_Byte_D	
 	movlw	0x30
-	addwf	0x36, W
+	addwf	Char2, W
 	call	LCD_Send_Byte_D	
 	
 	
@@ -131,7 +130,7 @@ loop1 	tblrd*+			; one byte from PM to TABLAT, increment TBLPRT
 ;	bra Wait_Transmit
 ;	bcf PIR2, SSP2IF ; clear interrupt flag
 ;	return
-	
+	goto	start
 stop	
 	bra	stop
 	end

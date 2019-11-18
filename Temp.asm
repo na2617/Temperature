@@ -1,6 +1,6 @@
 #include p18f87k22.inc
 	
-    global  Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM
+    global  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM
 acs0    udata_acs   ; named variables in access ram
 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Temp_cnt2   res 1 
@@ -25,6 +25,16 @@ Temp_setup	    ;reset pulse; should see a presence pulse from sensor
     call    bigdelay
     call    bigdelay
     return 
+    
+Temp_Read
+    call	Temp_setup
+    call	Temp_SkipROM
+    call	Temp_ConvertT
+    call	Temp_setup
+    call	Temp_SkipROM
+    call	Temp_ReadScratchpad
+    call	Temp_ReadTimeSlots
+    return
     
 Temp_ReadROM	    
     call    Write1

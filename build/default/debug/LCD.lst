@@ -1,4 +1,4 @@
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  1
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -15,223 +15,333 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00008 ;==========================================================================
                       00009 
                       02986         LIST
-                      00002         
-  0000                00003     global  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots,
-                             Temp_SkipROM
-                      00004 acs0    udata_acs   ; named variables in access ram
-000000                00005 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
-000001                00006 Temp_cnt2   res 1 
-000002                00007 Write1_high res 1
-000003                00008 Write1_low  res 1    
-000004                00009 Write0_high res 1
-000005                00010 Write0_low  res 1
-                      00011 
-                      00012     code
-                      00013    
-000000                00014 Temp_setup          ;reset pulse; should see a presence pulse from sensor
-000000 6A96           00015     clrf    TRISE
-000002 0E00           00016     movlw   0x00
-000004 6E8D           00017     movwf   LATE
-000006 0E00           00018     movlw   high(.250) ; load 16bit number into
-000008 6E??           00019     movwf   Temp_cnt2 ; FR 0x10
-00000A 0EFA           00020     movlw   low(.250)
-00000C 6E??           00021     movwf   Temp_cnt1 ; and FR 0x11
-00000E EC?? F???      00022     call    bigdelay
-000012 6896           00023     setf    TRISE
-000014 EC?? F???      00024     call    bigdelay
-000018 EC?? F???      00025     call    bigdelay
-00001C EC?? F???      00026     call    bigdelay
-000020 0012           00027     return 
-                      00028     
-000022                00029 Temp_Read
-000022 EC?? F???      00030     call        Temp_setup
-000026 EC?? F???      00031     call        Temp_SkipROM
-00002A EC?? F???      00032     call        Temp_ConvertT
-00002E EC?? F???      00033     call        Temp_setup
-000032 EC?? F???      00034     call        Temp_SkipROM
-000036 EC?? F???      00035     call        Temp_ReadScratchpad
-00003A EC?? F???      00036     call        Temp_ReadTimeSlots
-00003E 0012           00037     return
-                      00038     
-000040                00039 Temp_ReadROM        
-000040 EC?? F???      00040     call    Write1
-000044 EC?? F???      00041     call    Write1
-000048 EC?? F???      00042     call    Write0
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  2
+                      00002 
+  0000                00003     global  LCD_Setup, LCD_Write_Message, LCD_Write_Hex, LCD_Clear, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Se
+                            nd_Byte_D       
+                      00004 
+                      00005 acs0    udata_acs   ; named variables in access ram
+000000                00006 LCD_cnt_l   res 1   ; reserve 1 byte for variable LCD_cnt_l
+000001                00007 LCD_cnt_h   res 1   ; reserve 1 byte for variable LCD_cnt_h
+000002                00008 LCD_cnt_ms  res 1   ; reserve 1 byte for ms counter
+000003                00009 LCD_tmp     res 1   ; reserve 1 byte for temporary use
+000004                00010 LCD_counter res 1   ; reserve 1 byte for counting through nessage
+000005                00011 LCD_k       res 2
+                      00012 acs_ovr access_ovr
+000000                00013 LCD_hex_tmp res 1   ; reserve 1 byte for variable LCD_hex_tmp   
+000001                00014 Temp_Half   res 1   ;use as carry bit to output 0.5 degree increments
+000002                00015 LCD_counter2 res 1   ; reserve 1 byte for counting through nessage
+000003                00016 LCD_len     res 1
+000004                00017 LCD_0x12    res 1       ;to prevent file register conflicts
+  0005                00018         constant    LCD_E=5     ; LCD enable bit
+  0004                00019         constant    LCD_RS=4    ; LCD register select bit
+                      00020 
+                      00021 LCD     code
+                      00022     
+000000                00023 LCD_Setup
+000000 6A8A           00024         clrf    LATB
+000002 0EC0           00025         movlw   b'11000000'         ; RB0:5 all outputs
+000004 6E93           00026         movwf   TRISB
+000006 0E28           00027         movlw   .40
+000008 EC?? F???      00028         call    LCD_delay_ms    ; wait 40ms for LCD to start up properly
+00000C 0E30           00029         movlw   b'00110000'     ; Function set 4-bit
+00000E EC?? F???      00030         call    LCD_Send_Byte_I
+000012 0E0A           00031         movlw   .10             ; wait 40us
+000014 EC?? F???      00032         call    LCD_delay_x4us
+000018 0E28           00033         movlw   b'00101000'     ; 2 line display 5x8 dot characters
+00001A EC?? F???      00034         call    LCD_Send_Byte_I
+00001E 0E0A           00035         movlw   .10             ; wait 40us
+000020 EC?? F???      00036         call    LCD_delay_x4us
+000024 0E28           00037         movlw   b'00101000'     ; repeat, 2 line display 5x8 dot characters
+000026 EC?? F???      00038         call    LCD_Send_Byte_I
+00002A 0E0A           00039         movlw   .10             ; wait 40us
+00002C EC?? F???      00040         call    LCD_delay_x4us
+000030 0E0F           00041         movlw   b'00001111'     ; display on, cursor on, blinking on
+000032 EC?? F???      00042         call    LCD_Send_Byte_I
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00004C EC?? F???      00043     call    Write0
-000050 EC?? F???      00044     call    Write1
-000054 EC?? F???      00045     call    Write1
-000058 EC?? F???      00046     call    Write0
-00005C EC?? F???      00047     call    Write0
-000060 0012           00048     return
-                      00049    
-000062                00050 Temp_SkipROM            ;skip ROM command -> go to function command
-000062 EC?? F???      00051     call    Write0
-000066 EC?? F???      00052     call    Write0
-00006A EC?? F???      00053     call    Write1
-00006E EC?? F???      00054     call    Write1
-000072 EC?? F???      00055     call    Write0
-000076 EC?? F???      00056     call    Write0
-00007A EC?? F???      00057     call    Write1
-00007E EC?? F???      00058     call    Write1
-000082 0012           00059     return
-                      00060     
-                      00061     
-000084                00062 Temp_ConvertT       ;use inbuilt adc to store temp in scratchpad
-000084 EC?? F???      00063     call    Write0
-000088 EC?? F???      00064     call    Write0
-00008C EC?? F???      00065     call    Write1
-000090 EC?? F???      00066     call    Write0
-000094 EC?? F???      00067     call    Write0
-000098 EC?? F???      00068     call    Write0
-00009C EC?? F???      00069     call    Write1
-0000A0 EC?? F???      00070     call    Write0
-0000A4 0012           00071     return
-                      00072     
-0000A6                00073 Temp_ReadScratchpad     ;start reading data from scratchoad
-0000A6 EC?? F???      00074     call    Write0
-0000AA EC?? F???      00075     call    Write1
-0000AE EC?? F???      00076     call    Write1                  
-0000B2 EC?? F???      00077     call    Write1              
-0000B6 EC?? F???      00078     call    Write1                 
-0000BA EC?? F???      00079     call    Write1                              
-0000BE EC?? F???      00080     call    Write0                          
-0000C2 EC?? F???      00081     call    Write1
-0000C6 0012           00082     return
-                      00083     
-0000C8                00084 Temp_ReadTimeSlots      ;generate time slots in which sensor gives 0s and 1s
-0000C8 EC?? F???      00085     call    Temp_TimeSlot
-0000CC EC?? F???      00086     call    Temp_TimeSlot
-                      00087     ;call    Serial_to_Parallel
-0000D0 EC?? F???      00088     call    Temp_TimeSlot
-                      00089     ;call    Serial_to_Parallel
-0000D4 EC?? F???      00090     call    Temp_TimeSlot
-                      00091     ;call    Serial_to_Parallel
-0000D8 EC?? F???      00092     call    Temp_TimeSlot  
-                      00093     ;call    Serial_to_Parallel
-0000DC EC?? F???      00094     call    Temp_TimeSlot
-                      00095     ;call    Serial_to_Parallel
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  3
+000036 0E0A           00043         movlw   .10             ; wait 40us
+000038 EC?? F???      00044         call    LCD_delay_x4us
+00003C 0E01           00045         movlw   b'00000001'     ; display clear
+00003E EC?? F???      00046         call    LCD_Send_Byte_I
+000042 0E02           00047         movlw   .2              ; wait 2ms
+000044 EC?? F???      00048         call    LCD_delay_ms
+000048 0E06           00049         movlw   b'00000110'     ; entry mode incr by 1 no shift
+00004A EC?? F???      00050         call    LCD_Send_Byte_I
+00004E 0E0A           00051         movlw   .10             ; wait 40us
+000050 EC?? F???      00052         call    LCD_delay_x4us
+000054 0012           00053         return
+                      00054 
+000056                00055 LCD_Write_Dec
+                      00056 
+000056 6A10           00057         clrf    0x10
+000058 6A11           00058         clrf    0x11
+00005A 6A20           00059         clrf    0x20
+00005C 6A21           00060         clrf    0x21
+00005E 6A30           00061         clrf    0x30
+000060 6A31           00062         clrf    0x31
+000062 6A40           00063         clrf    0x40
+000064 6A41           00064         clrf    0x41
+000066 6A55           00065         clrf    0x55
+000068 6A56           00066         clrf    0x56
+00006A 6A50           00067         clrf    0x50
+00006C 6A51           00068         clrf    0x51
+                      00069         
+00006E 0E41           00070         movlw   0x41
+000070 6E10           00071         movwf   0x10
+000072 0E8A           00072         movlw   0x8A
+000074 6E11           00073         movwf   0x11    ;moving constant 0x418a to 0x10, 0x11 location
+000076 0E00           00074         movlw   0x0
+000078 6E20           00075         movwf   0x20
+                      00076         ;movff  ADRESH, 0x20  
+00007A 6AD8           00077         clrf    STATUS
+00007C 6A??           00078         clrf    Temp_Half
+                      00079         
+00007E 323A           00080         rrcf    0x3A, F,A       
+000080 C03A F021      00081         movff   0x3A, 0x21      ;divide hex value by two - half degree precision
+000084 B0D8           00082         btfsc   STATUS, 0
+000086 80??           00083         bsf     Temp_Half, 0
+                      00084         
+                      00085         
+000088 5021           00086         movf    0x21, W
+00008A 0211           00087         mulwf   0x11
+00008C CFF3 F031      00088         movff   PRODL, 0x31
+000090 CFF4 F030      00089         movff   PRODH, 0x30
+000094 0210           00090         mulwf   0x10
+000096 CFF3 F041      00091         movff   PRODL, 0x41     ;multiplying and storing each byte separately
+00009A CFF4 F040      00092         movff   PRODH, 0x40
+00009E 5020           00093         movf    0x20, W
+0000A0 0211           00094         mulwf   0x11
+0000A2 CFF3 F051      00095         movff   PRODL, 0x51
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-0000E0 EC?? F???      00096     call    Temp_TimeSlot  
-                      00097     ;call    Serial_to_Parallel
-0000E4 EC?? F???      00098     call    Temp_TimeSlot
-                      00099     ;call    Serial_to_Parallel
-                      00100     ;call    Temp_TimeSlot
-                      00101     ;bcf     STATUS,0   ;sets carry to 0
-0000E8 0000           00102     nop
-                      00103     
-0000EA 0012           00104     return
-                      00105     
-0000EC                00106 Serial_to_Parallel
-0000EC CFEE FFD8      00107     movff   POSTINC0,   STATUS
-                      00108     ;movff   POSTINC1, 0x90
-0000F0 3630           00109     RLCF   0x30
-0000F2 0012           00110     return
-                      00111     
-                      00112     
-                      00113     
-                      00114     
-0000F4                00115 Temp_TimeSlot           ;creates timeslot so it is over the minimum reguired length
-0000F4 EC?? F???      00116     call    TimeSlotInit
-0000F8 0E32           00117     movlw   0x32
-0000FA 6E20           00118     movwf   0x20
-0000FC EC?? F???      00119     call    delay       ;space out timeslots
-000100 0012           00120     return
-                      00121     
-                      00122 
-                      00123     
-000102                00124 Write1
-000102 6A96           00125     clrf    TRISE
-000104 0E00           00126     movlw   0x00
-000106 6E8D           00127     movwf   LATE
-000108 0E01           00128     movlw   0x01
-00010A 6E20           00129     movwf   0x20
-00010C EC?? F???      00130     call    delay
-000110 6896           00131     setf    TRISE
-000112 0E33           00132     movlw   0x33
-000114 6E20           00133     movwf   0x20
-000116 EC?? F???      00134     call    delay
-00011A 0012           00135     return
-                      00136     
-00011C                00137 Write0
-00011C 6A96           00138     clrf    TRISE
-00011E 0E00           00139     movlw   0x00
-000120 6E8D           00140     movwf   LATE
-000122 0E33           00141     movlw   0x33
-000124 6E20           00142     movwf   0x20
-000126 EC?? F???      00143     call    delay
-                      00144    ; movlw   0xA0   These extra delay make it too long - not needed 
-                      00145     ;movwf   0x20
-                      00146     ;call    delay
-00012A 6896           00147     setf    TRISE
-00012C 0E01           00148     movlw   0x01
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  4
+0000A6 CFF4 F050      00096         movff   PRODH, 0x50
+0000AA 0210           00097         mulwf   0x10
+0000AC CFF3 F056      00098         movff   PRODL, 0x56
+0000B0 CFF4 F055      00099         movff   PRODH, 0x55
+0000B4 C031 F013      00100         movff   0x31, 0x13
+                      00101         
+0000B8 6AD8           00102         clrf    STATUS
+0000BA 5030           00103         movf    0x30, W
+0000BC 2441           00104         addwf   0x41, W             ;adding and storing results in conescutive FRs
+0000BE 2451           00105         addwf   0x51, W 
+0000C0 6E??           00106         movwf   LCD_0x12
+0000C2 5040           00107         movf    0x40, W
+0000C4 2050           00108         addwfc  0x50, W
+0000C6 2056           00109         addwfc  0x56, W
+0000C8 6E11           00110         movwf   0x11
+0000CA C055 F010      00111         movff   0x55, 0x10
+0000CE 5010           00112         movf    0x10, W
+0000D0 0B0F           00113         andlw   0x0F
+0000D2 6E33           00114         movwf   0x33
+                      00115         
+                      00116         ;second multiplication
+0000D4 EC?? F???      00117         call    LCD_Multi
+0000D8 5010           00118         movf    0x10, W
+0000DA 0B0F           00119         andlw   0x0F
+0000DC 6E34           00120         movwf   0x34
+                      00121         ;third
+0000DE EC?? F???      00122         call    LCD_Multi
+0000E2 5010           00123         movf    0x10, W
+0000E4 0B0F           00124         andlw   0x0F
+0000E6 6E35           00125         movwf   0x35
+                      00126         ;fourth
+0000E8 EC?? F???      00127         call    LCD_Multi
+0000EC 5010           00128         movf    0x10, W
+0000EE 0B0F           00129         andlw   0x0F
+0000F0 6E36           00130         movwf   0x36
+                      00131         
+0000F2 0012           00132         return
+                      00133         
+0000F4                00134 LCD_Multi
+0000F4 0E0A           00135         movlw   0x0A
+0000F6 0213           00136         mulwf   0x13
+0000F8 CFF3 F031      00137         movff   PRODL, 0x31
+0000FC CFF4 F030      00138         movff   PRODH, 0x30
+000100 02??           00139         mulwf   LCD_0x12
+000102 CFF3 F041      00140         movff   PRODL, 0x41     ;multiplying and storing each byte separately
+000106 CFF4 F040      00141         movff   PRODH, 0x40
+00010A 0211           00142         mulwf   0x11
+00010C CFF3 F051      00143         movff   PRODL, 0x51     
+000110 CFF4 F050      00144         movff   PRODH, 0x50
+000114 C031 F013      00145         movff   0x31, 0x13
+                      00146         
+000118 6AD8           00147         clrf    STATUS
+00011A 5030           00148         movf    0x30, W
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  4
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00012E 6E20           00149     movwf   0x20
-000130 EC?? F???      00150     call    delay
-000134 0012           00151     return
-                      00152     
-000136                00153 TimeSlotInit        ;pulls low to start timeslot
-000136 6A96           00154     clrf    TRISE
-000138 0E00           00155     movlw   0x00
-00013A 6E8D           00156     movwf   LATE
-00013C 0E01           00157     movlw   0x01
-00013E 6E20           00158     movwf   0x20
-000140 EC?? F???      00159     call    delay
-000144 6896           00160     setf    TRISE
-000146 6895           00161     setf    TRISD
-000148 0E01           00162     movlw   0x01        ;release port E, wait before sampling state to allow voltage to rise if output i
-                            s 1
-00014A 6E20           00163     movwf   0x20
-00014C EC?? F???      00164     call    delay
-000150 90D8           00165     bcf     STATUS,0    ;sets carry to 0
-000152 B083           00166     btfsc   PORTD,RD0   ;if RD0 is 0, go to rotate
-000154 80D8           00167     bsf     STATUS,0       ;if RD0 is 1, set carry to 1
-000156 323A           00168     rrcf    0x3A,F,A    ;carry-> MSB, then iterate
-                      00169     
-                      00170     
-                      00171     ;movff   PORTD, POSTDEC2
-000158 0E33           00172     movlw   0x33
-00015A 6E20           00173     movwf   0x20
-00015C EC?? F???      00174     call    delay       ; second delay lets sensor hold the pin low/high to receive 0/1
-000160 0012           00175     return
-                      00176  
-000162                00177 delay
-000162 2E20           00178     decfsz  0x20, F, ACCESS
-000164 D???           00179     bra     delay
-000166 0012           00180     return
-                      00181     
-                      00182     
-000168                00183 bigdelay
-000168 0E00           00184     movlw 0x00 ; W=0
-00016A                00185 dloop 
-00016A 06??           00186     decf Temp_cnt1 ,f ; no carry when 0x00 -> 0xff
-00016C 5A??           00187     subwfb Temp_cnt2,f ; no carry when 0x00 -> 0xff
-00016E E2??           00188     bc dloop ; if carry, then loop again
-000170 0012           00189     return ; carry not set so return
-                      00190          
-                      00191 
-                      00192          
-                      00193     
-                      00194     
-                      00195 
-                      00196 
-                      00197     end
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  5
+00011C 2041           00149         addwfc  0x41, W             ;adding and storing results in conescutive FRs 
+00011E 6E??           00150         movwf   LCD_0x12
+000120 5040           00151         movf    0x40, W
+000122 2051           00152         addwfc  0x51, W
+000124 6E11           00153         movwf   0x11
+000126 C050 F010      00154         movff   0x50, 0x10
+                      00155 
+00012A 0012           00156         return
+                      00157         
+00012C                00158 LCD_.5
+                      00159         ;bsf    Temp_Half, 0
+                      00160         ;clrf   Temp_Half
+00012C B0??           00161         btfsc   Temp_Half, 0    ;if 0th bit was 1, output an extra 0.5 degrees
+00012E EC?? F???      00162         call    LCD_Write_Message
+000132 0012           00163         return
+                      00164         
+000134                00165 LCD_1
+                      00166         ;bsf    Temp_Half, 0
+                      00167         ;clrf   Temp_Half
+000134 B0??           00168         btfsc   Temp_Half, 0    ;if 0th bit was 1, output an extra 0.5 degrees
+000136 0012           00169         return
+000138 EC?? F???      00170         call    LCD_Write_Message
+00013C 0012           00171         return
+                      00172         
+00013E                00173 LCD_Write_Hex       ; Writes byte stored in W as hex
+00013E 6E??           00174         movwf   LCD_hex_tmp
+000140 38??           00175         swapf   LCD_hex_tmp,W   ; high nibble first
+000142 EC?? F???      00176         call    LCD_Hex_Nib
+000146 50??           00177         movf    LCD_hex_tmp,W   ; then low nibble
+000148                00178 LCD_Hex_Nib         ; writes low nibble as hex character
+000148 0B0F           00179         andlw   0x0F
+00014A 6E??           00180         movwf   LCD_tmp
+00014C 0E0A           00181         movlw   0x0A
+00014E 60??           00182         cpfslt  LCD_tmp
+000150 0F07           00183         addlw   0x07    ; number is greater than 9 
+000152 0F26           00184         addlw   0x26
+000154 24??           00185         addwf   LCD_tmp,W
+000156 EC?? F???      00186         call    LCD_Send_Byte_D ; write out ascii
+00015A 0012           00187         return
+                      00188         
+00015C                00189 LCD_Write_Message           ; Message stored at FSR2, length stored in W
+00015C 6E??           00190         movwf   LCD_len
+00015E 0E10           00191         movlw   0x10
+000160 6E??           00192         movwf   LCD_counter
+000162 6E??           00193         movwf   LCD_counter2
+000164                00194 LCD_Loop_message
+000164 50DE           00195         movf    POSTINC2, W
+000166 EC?? F???      00196         call    LCD_Send_Byte_D
+00016A 2E??           00197         decfsz  LCD_len
+00016C D???           00198         bra     LCD_Loop_message
+                      00199 ;       movlw   b'11000000'
+                      00200 ;       call    LCD_Send_Byte_I
+                      00201 ;       call    LCD_delay_ms
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00016E 0012           00202         return
+                      00203 ;LCD_Loop_message2                  ;for two line display 
+                      00204 ;       movf    POSTINC2, W
+                      00205 ;       call    LCD_Send_Byte_D
+                      00206 ;       decfsz  LCD_counter2
+                      00207 ;       bra     LCD_Loop_message2
+                      00208 ;       return
+                      00209 ;       
+                      00210         
+000170                00211 LCD_Clear
+000170 0E01           00212         movlw   b'00000001'     ; display clear
+000172 EC?? F???      00213         call    LCD_Send_Byte_I
+000176 0E02           00214         movlw   .2              ; wait 2ms
+000178 EC?? F???      00215         call    LCD_delay_ms
+00017C 0012           00216         return
+                      00217 
+00017E                00218 LCD_Send_Byte_I             ; Transmits byte stored in W to instruction reg
+00017E 6E??           00219         movwf   LCD_tmp
+000180 38??           00220         swapf   LCD_tmp,W   ; swap nibbles, high nibble goes first
+000182 0B0F           00221         andlw   0x0f        ; select just low nibble
+000184 6E8A           00222         movwf   LATB        ; output data bits to LCD
+000186 988A           00223         bcf     LATB, LCD_RS    ; Instruction write clear RS bit
+000188 EC?? F???      00224         call    LCD_Enable  ; Pulse enable Bit 
+00018C 50??           00225         movf    LCD_tmp,W   ; swap nibbles, now do low nibble
+00018E 0B0F           00226         andlw   0x0f        ; select just low nibble
+000190 6E8A           00227         movwf   LATB        ; output data bits to LCD
+000192 988A           00228         bcf     LATB, LCD_RS    ; Instruction write clear RS bit
+000194 EC?? F???      00229         call    LCD_Enable  ; Pulse enable Bit 
+000198 0012           00230         return
+                      00231 
+00019A                00232 LCD_Send_Byte_D             ; Transmits byte stored in W to data reg
+00019A 6E??           00233         movwf   LCD_tmp
+00019C 38??           00234         swapf   LCD_tmp,W   ; swap nibbles, high nibble goes first
+00019E 0B0F           00235         andlw   0x0f        ; select just low nibble
+0001A0 6E8A           00236         movwf   LATB        ; output data bits to LCD
+0001A2 888A           00237         bsf     LATB, LCD_RS    ; Data write set RS bit
+0001A4 EC?? F???      00238         call    LCD_Enable  ; Pulse enable Bit 
+0001A8 50??           00239         movf    LCD_tmp,W   ; swap nibbles, now do low nibble
+0001AA 0B0F           00240         andlw   0x0f        ; select just low nibble
+0001AC 6E8A           00241         movwf   LATB        ; output data bits to LCD
+0001AE 888A           00242         bsf     LATB, LCD_RS    ; Data write set RS bit     
+0001B0 EC?? F???      00243         call    LCD_Enable  ; Pulse enable Bit 
+0001B4 0E0A           00244         movlw   .10         ; delay 40us
+0001B6 EC?? F???      00245         call    LCD_delay_x4us
+0001BA 0012           00246         return
+                      00247 
+0001BC                00248 LCD_Enable          ; pulse enable bit LCD_E for 500ns
+0001BC 0000           00249         nop
+0001BE 0000           00250         nop
+0001C0 0000           00251         nop
+0001C2 0000           00252         nop
+0001C4 0000           00253         nop
+0001C6 0000           00254         nop
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0001C8 0000           00255         nop
+0001CA 0000           00256         nop
+0001CC 8A8A           00257         bsf         LATB, LCD_E     ; Take enable high
+0001CE 0000           00258         nop
+0001D0 0000           00259         nop
+0001D2 0000           00260         nop
+0001D4 0000           00261         nop
+0001D6 0000           00262         nop
+0001D8 0000           00263         nop
+0001DA 0000           00264         nop
+0001DC 9A8A           00265         bcf         LATB, LCD_E     ; Writes data to LCD
+0001DE 0012           00266         return
+                      00267     
+                      00268 ; ** a few delay routines below here as LCD timing can be quite critical ****
+0001E0                00269 LCD_delay_ms                ; delay given in ms in W
+0001E0 6E??           00270         movwf   LCD_cnt_ms
+0001E2 0EFA           00271 lcdlp2  movlw   .250        ; 1 ms delay
+0001E4 EC?? F???      00272         call    LCD_delay_x4us  
+0001E8 2E??           00273         decfsz  LCD_cnt_ms
+0001EA D???           00274         bra     lcdlp2
+0001EC 0012           00275         return
+                      00276     
+0001EE                00277 LCD_delay_x4us              ; delay given in chunks of 4 microsecond in W
+0001EE 6E??           00278         movwf   LCD_cnt_l   ; now need to multiply by 16
+0001F0 3A??           00279         swapf   LCD_cnt_l,F ; swap nibbles
+0001F2 0E0F           00280         movlw   0x0f        
+0001F4 14??           00281         andwf   LCD_cnt_l,W ; move low nibble to W
+0001F6 6E??           00282         movwf   LCD_cnt_h   ; then to LCD_cnt_h
+0001F8 0EF0           00283         movlw   0xf0        
+0001FA 16??           00284         andwf   LCD_cnt_l,F ; keep high nibble in LCD_cnt_l
+0001FC EC?? F???      00285         call    LCD_delay
+000200 0012           00286         return
+                      00287 
+000202                00288 LCD_delay                       ; delay routine 4 instruction loop == 250ns         
+000202 0E00           00289         movlw   0x00            ; W=0
+000204 06??           00290 lcdlp1  decf    LCD_cnt_l,F     ; no carry when 0x00 -> 0xff
+000206 5A??           00291         subwfb  LCD_cnt_h,F     ; no carry when 0x00 -> 0xff
+000208 E2??           00292         bc      lcdlp1          ; carry, then loop again
+00020A 0012           00293         return                  ; carry reset so return
+                      00294 
+                      00295 
+                      00296     end
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  7
 
 
 SYMBOL TABLE
@@ -290,7 +400,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  6
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  8
 
 
 SYMBOL TABLE
@@ -349,7 +459,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  7
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE  9
 
 
 SYMBOL TABLE
@@ -408,7 +518,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  8
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 10
 
 
 SYMBOL TABLE
@@ -467,7 +577,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE  9
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 11
 
 
 SYMBOL TABLE
@@ -526,7 +636,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 10
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 12
 
 
 SYMBOL TABLE
@@ -585,7 +695,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 11
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 13
 
 
 SYMBOL TABLE
@@ -644,7 +754,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 12
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 14
 
 
 SYMBOL TABLE
@@ -703,7 +813,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 13
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 15
 
 
 SYMBOL TABLE
@@ -762,7 +872,7 @@ ECCP1AS1                          00000005
 ECCP1AS2                          00000006
 ECCP1ASE                          00000007
 ECCP1CON                          00000FBB
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 14
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 16
 
 
 SYMBOL TABLE
@@ -821,7 +931,7 @@ FSR2H                             00000FDA
 FSR2L                             00000FD9
 GCEN                              00000007
 GIE                               00000007
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 15
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 17
 
 
 SYMBOL TABLE
@@ -880,7 +990,7 @@ INT3F                             00000002
 INT3IE                            00000005
 INT3IF                            00000002
 INT3IP                            00000001
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 16
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 18
 
 
 SYMBOL TABLE
@@ -939,7 +1049,7 @@ LATB7                             00000007
 LATC                              00000F8B
 LATC0                             00000000
 LATC1                             00000001
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 17
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 19
 
 
 SYMBOL TABLE
@@ -998,7 +1108,7 @@ LATJ1                             00000001
 LATJ2                             00000002
 LATJ3                             00000003
 LATJ4                             00000004
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 18
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 20
 
 
 SYMBOL TABLE
@@ -1008,6 +1118,34 @@ LATJ5                             00000005
 LATJ6                             00000006
 LATJ7                             00000007
 LB                                00000006
+LCD_.5                            0000012C
+LCD_0x12                          00000004
+LCD_1                             00000134
+LCD_Clear                         00000170
+LCD_E                             00000005
+LCD_Enable                        000001BC
+LCD_Hex_Nib                       00000148
+LCD_Loop_message                  00000164
+LCD_Multi                         000000F4
+LCD_RS                            00000004
+LCD_Send_Byte_D                   0000019A
+LCD_Send_Byte_I                   0000017E
+LCD_Setup                         00000000
+LCD_Write_Dec                     00000056
+LCD_Write_Hex                     0000013E
+LCD_Write_Message                 0000015C
+LCD_cnt_h                         00000001
+LCD_cnt_l                         00000000
+LCD_cnt_ms                        00000002
+LCD_counter                       00000004
+LCD_counter2                      00000002
+LCD_delay                         00000202
+LCD_delay_ms                      000001E0
+LCD_delay_x4us                    000001EE
+LCD_hex_tmp                       00000000
+LCD_k                             00000005
+LCD_len                           00000003
+LCD_tmp                           00000003
 LVDIE                             00000002
 LVDIF                             00000002
 LVDIP                             00000002
@@ -1029,6 +1167,12 @@ NOT_BOR                           00000000
 NOT_CM                            00000005
 NOT_CS                            00000002
 NOT_DONE                          00000001
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 NOT_PD                            00000002
 NOT_POR                           00000001
 NOT_RBPU                          00000007
@@ -1057,12 +1201,6 @@ OE                                00000001
 OERR                              00000001
 OERR1                             00000001
 OERR2                             00000001
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 19
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 OSC1                              00000007
 OSC2                              00000006
 OSCCON                            00000FD3
@@ -1088,6 +1226,12 @@ P1M0                              00000006
 P1M1                              00000007
 P1RSEN                            00000007
 P2A_PORTC                         00000001
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 P2A_PORTE                         00000007
 P2B                               00000002
 P2C                               00000001
@@ -1116,12 +1260,6 @@ P3M1                              00000007
 P3RSEN                            00000007
 PA3                               00000000
 PADCFG1                           00000F53
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 20
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PB1                               00000007
 PB3                               00000005
 PC                                00000FF9
@@ -1147,6 +1285,12 @@ PIE5                              00000FB9
 PIE6                              00000F60
 PIR1                              00000F9E
 PIR2                              00000FA1
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 23
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PIR3                              00000FA4
 PIR4                              00000FB7
 PIR5                              00000FBA
@@ -1175,12 +1319,6 @@ POSTDEC2                          00000FDD
 POSTINC0                          00000FEE
 POSTINC1                          00000FE6
 POSTINC2                          00000FDE
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 21
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 PR10                              00000F34
 PR12                              00000F31
 PR2                               00000FCB
@@ -1206,6 +1344,12 @@ PSPCON                            00000FA7
 PSPIE                             00000007
 PSPIF                             00000007
 PSPIP                             00000007
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 24
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 PSPMD                             00000007
 PSPMODE                           00000004
 PSS1AC0                           00000002
@@ -1234,12 +1378,6 @@ RA4                               00000004
 RA5                               00000005
 RA6                               00000006
 RA7                               00000007
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 22
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RB0                               00000000
 RB1                               00000001
 RB2                               00000002
@@ -1265,6 +1403,12 @@ RC3                               00000003
 RC4                               00000004
 RC5                               00000005
 RC6                               00000006
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 25
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RC7                               00000007
 RC8_9                             00000006
 RC9                               00000006
@@ -1293,12 +1437,6 @@ RD6                               00000006
 RD7                               00000007
 RDPU                              00000007
 RE0                               00000000
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 23
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RE1                               00000001
 RE2                               00000002
 RE3                               00000003
@@ -1324,6 +1462,12 @@ RG2                               00000002
 RG3                               00000003
 RG4                               00000004
 RG5                               00000005
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 26
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 RH0                               00000000
 RH1                               00000001
 RH2                               00000002
@@ -1352,12 +1496,6 @@ ROSSLP                            00000005
 RSEN                              00000001
 RTCC                              00000004
 RTCCAL                            00000F5E
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 24
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 RTCCFG                            00000F5F
 RTCCIE                            00000000
 RTCCIF                            00000000
@@ -1383,6 +1521,12 @@ RX9D                              00000000
 RX9D1                             00000000
 RX9D2                             00000000
 RXDTP                             00000005
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 27
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 R_NOT_W                           00000002
 R_W                               00000002
 S                                 00000003
@@ -1411,12 +1555,6 @@ SOSCI                             00000001
 SOSCO                             00000000
 SOSCRUN                           00000006
 SP0                               00000000
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 25
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 SP1                               00000001
 SP2                               00000002
 SP3                               00000003
@@ -1442,6 +1580,12 @@ SSP1CON1                          00000FC6
 SSP1CON2                          00000FC5
 SSP1IE                            00000003
 SSP1IF                            00000003
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 28
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 SSP1IP                            00000003
 SSP1MD                            00000001
 SSP1MSK                           00000FC8
@@ -1470,12 +1614,6 @@ SSPM2                             00000002
 SSPM3                             00000003
 SSPOV                             00000006
 SSPSTAT                           00000FC7
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 26
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 STATUS                            00000FD8
 STKFUL                            00000007
 STKOVF                            00000007
@@ -1491,7 +1629,6 @@ SWDTEN                            00000000
 SYNC                              00000004
 SYNC1                             00000004
 SYNC2                             00000004
-Serial_to_Parallel                000000EC
 T08BIT                            00000006
 T0CKI                             00000004
 T0CON                             00000FD5
@@ -1502,6 +1639,12 @@ T0IP                              00000002
 T0PS0                             00000000
 T0PS1                             00000001
 T0PS2                             00000002
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 29
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T0SE                              00000004
 T10CKPS0                          00000000
 T10CKPS1                          00000001
@@ -1529,12 +1672,6 @@ T1GPOL                            00000006
 T1GSPM                            00000004
 T1GSS0                            00000000
 T1GSS1                            00000001
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 27
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T1GTM                             00000005
 T1GVAL                            00000002
 T2CKPS0                           00000000
@@ -1561,6 +1698,12 @@ T3GVAL                            00000002
 T4CKPS0                           00000000
 T4CKPS1                           00000001
 T4CON                             00000F6B
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 30
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 T4OUTPS0                          00000003
 T4OUTPS1                          00000004
 T4OUTPS2                          00000005
@@ -1588,12 +1731,6 @@ T6OUTPS2                          00000005
 T6OUTPS3                          00000006
 T7CKI                             00000004
 T7CKPS0                           00000004
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 28
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 T7CKPS1                           00000005
 T7CON                             00000F3D
 T7G                               00000001
@@ -1620,6 +1757,12 @@ TBLPTRL                           00000FF6
 TBLPTRU                           00000FF8
 TGEN                              00000004
 TMR0                              00000FD6
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 31
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TMR0H                             00000FD7
 TMR0IE                            00000005
 TMR0IF                            00000002
@@ -1647,12 +1790,6 @@ TMR1GIF                           00000002
 TMR1GIP                           00000002
 TMR1H                             00000FCF
 TMR1IE                            00000000
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 29
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TMR1IF                            00000000
 TMR1IP                            00000000
 TMR1L                             00000FCE
@@ -1679,6 +1816,12 @@ TMR3L                             00000FB2
 TMR3MD                            00000003
 TMR3ON                            00000000
 TMR4                              00000F6D
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 32
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TMR4IE                            00000000
 TMR4IF                            00000000
 TMR4IP                            00000000
@@ -1706,12 +1849,6 @@ TMR6MD                            00000004
 TMR6ON                            00000002
 TMR7                              00000F3E
 TMR7CS0                           00000006
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 30
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TMR7CS1                           00000007
 TMR7GE                            00000007
 TMR7GIE                           00000007
@@ -1738,6 +1875,12 @@ TOSU                              00000FFF
 TRIGSEL0                          00000006
 TRIGSEL1                          00000007
 TRISA                             00000F92
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 33
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TRISA0                            00000000
 TRISA1                            00000001
 TRISA2                            00000002
@@ -1765,12 +1908,6 @@ TRISC5                            00000005
 TRISC6                            00000006
 TRISC7                            00000007
 TRISD                             00000F95
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 31
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TRISD0                            00000000
 TRISD1                            00000001
 TRISD2                            00000002
@@ -1797,6 +1934,12 @@ TRISF5                            00000005
 TRISF6                            00000006
 TRISF7                            00000007
 TRISG                             00000F98
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 34
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TRISG0                            00000000
 TRISG1                            00000001
 TRISG2                            00000002
@@ -1824,12 +1967,6 @@ TRMT                              00000001
 TRMT1                             00000001
 TRMT2                             00000001
 TUN0                              00000000
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 32
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 TUN1                              00000001
 TUN2                              00000002
 TUN3                              00000003
@@ -1856,6 +1993,12 @@ TXEN                              00000005
 TXEN1                             00000005
 TXEN2                             00000005
 TXIE                              00000004
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 35
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 TXIF                              00000004
 TXIP                              00000004
 TXREG                             00000FAD
@@ -1864,17 +2007,7 @@ TXREG2                            00000F1C
 TXSTA                             00000FAC
 TXSTA1                            00000FAC
 TXSTA2                            00000F21
-Temp_ConvertT                     00000084
-Temp_Read                         00000022
-Temp_ReadROM                      00000040
-Temp_ReadScratchpad               000000A6
-Temp_ReadTimeSlots                000000C8
-Temp_SkipROM                      00000062
-Temp_TimeSlot                     000000F4
-Temp_cnt1                         00000000
-Temp_cnt2                         00000001
-Temp_setup                        00000000
-TimeSlotInit                      00000136
+Temp_Half                         00000001
 U1OD                              00000006
 U2OD                              00000007
 UA                                00000001
@@ -1883,12 +2016,6 @@ UART2MD                           00000004
 UB                                00000007
 ULPEN                             00000002
 ULPLVL                            00000005
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 33
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 ULPSINK                           00000001
 ULPWU                             00000000
 VCFG0                             00000004
@@ -1911,12 +2038,6 @@ WRERR                             00000003
 WRH                               00000003
 WRL                               00000002
 WUE                               00000001
-Write0                            0000011C
-Write0_high                       00000004
-Write0_low                        00000005
-Write1                            00000102
-Write1_high                       00000002
-Write1_low                        00000003
 Z                                 00000002
 _ABW_MM_3L                        000000FF
 _ABW_XM12_3L                      000000EF
@@ -1931,6 +2052,12 @@ _BOREN_SBORDIS_2L                 000000FF
 _BORPWR_HIGH_2L                   000000DF
 _BORPWR_LOW_2L                    0000009F
 _BORPWR_MEDIUM_2L                 000000BF
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 36
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _BORPWR_ZPBORMV_2L                000000FF
 _BORV_0_2L                        000000E7
 _BORV_1_2L                        000000EF
@@ -1942,12 +2069,6 @@ _CCP2MX_PORTBE_3H                 000000FE
 _CCP2MX_PORTC_3H                  000000FF
 _CONFIG1H                         00300001
 _CONFIG1L                         00300000
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 34
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _CONFIG2H                         00300003
 _CONFIG2L                         00300002
 _CONFIG3H                         00300005
@@ -1990,6 +2111,12 @@ _EBRT0_ON_7L                      000000FE
 _EBRT1_OFF_7L                     000000FF
 _EBRT1_ON_7L                      000000FD
 _EBRT2_OFF_7L                     000000FF
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 37
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _EBRT2_ON_7L                      000000FB
 _EBRT3_OFF_7L                     000000FF
 _EBRT3_ON_7L                      000000F7
@@ -2001,12 +2128,6 @@ _EBRT6_OFF_7L                     000000FF
 _EBRT6_ON_7L                      000000BF
 _EBRT7_OFF_7L                     000000FF
 _EBRT7_ON_7L                      0000007F
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 35
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _EBRTB_OFF_7H                     000000FF
 _EBRTB_ON_7H                      000000BF
 _ECCPMX_PORTE_3H                  000000FF
@@ -2049,6 +2170,12 @@ _PWRTEN_OFF_2L                    000000FF
 _PWRTEN_ON_2L                     000000FE
 _RETEN_OFF_1L                     000000FE
 _RETEN_ON_1L                      000000FF
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 38
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _RTCOSC_INTOSCREF_3L              000000FE
 _RTCOSC_SOSCREF_3L                000000FF
 _SOSCSEL_DIG_1L                   000000F7
@@ -2060,12 +2187,6 @@ _WAIT_OFF_3L                      000000FF
 _WAIT_ON_3L                       0000007F
 _WDTEN_NOSLP_2H                   000000FD
 _WDTEN_OFF_2H                     000000FC
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 36
-
-
-SYMBOL TABLE
-  LABEL                             VALUE 
-
 _WDTEN_ON_2H                      000000FE
 _WDTEN_SWDTDIS_2H                 000000FF
 _WDTPS_1024_2H                    000000AB
@@ -2108,21 +2229,22 @@ _WRT7_ON_6L                       0000007F
 _WRTB_OFF_6H                      000000FF
 _WRTB_ON_6H                       000000BF
 _WRTC_OFF_6H                      000000FF
+MPASM 5.81                           LCD.ASM   11-18-2019  16:01:45         PAGE 39
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
 _WRTC_ON_6H                       000000DF
 _WRTD_OFF_6H                      000000FF
 _WRTD_ON_6H                       0000007F
 _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
-bigdelay                          00000168
-delay                             00000162
-dloop                             0000016A
-
-MPASM 5.81                          TEMP.ASM   11-18-2019  16:01:35         PAGE 37
-
-
-
-
+__DEBUG                           
+__MPLAB_DEBUGGER_ICD3             1
+lcdlp1                            00000204
+lcdlp2                            000001E2
 
 Errors   :     0
 Warnings :     0 reported,     0 suppressed

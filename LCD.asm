@@ -14,6 +14,7 @@ LCD_hex_tmp res 1   ; reserve 1 byte for variable LCD_hex_tmp
 Temp_Half   res 1   ;use as carry bit to output 0.5 degree increments
 LCD_counter2 res 1   ; reserve 1 byte for counting through nessage
 LCD_len	    res 1
+LCD_0x12    res 1	;to prevent file register conflicts
 	constant    LCD_E=5	; LCD enable bit
     	constant    LCD_RS=4	; LCD register select bit
 
@@ -72,16 +73,15 @@ LCD_Write_Dec
 	movwf	0x11	;moving constant 0x418a to 0x10, 0x11 location
 	movlw	0x0
 	movwf	0x20
-	;movff	ADRESH, 0x20
+	;movff	ADRESH, 0x20  
 	clrf	STATUS
+	clrf	Temp_Half
+	
 	rrcf	0x3A, F,A	
-	movff	0x3A, 0x21	;moving voltage in hex to 0x20, 0x21 location
+	movff	0x3A, 0x21	;divide hex value by two - half degree precision
 	btfsc	STATUS, 0
 	bsf	Temp_Half, 0
-	;movlw	0x04		;using fixed values of voltage for testing
-	;movwf	0x20
-	;movlw	0xD2
-	;movwf	0x21
+	
 	
 	movf	0x21, W
 	mulwf	0x11
@@ -103,10 +103,10 @@ LCD_Write_Dec
 	movf	0x30, W
 	addwf	0x41, W		    ;adding and storing results in conescutive FRs
 	addwf	0x51, W 
-	movwf	0x12
+	movwf	LCD_0x12
 	movf	0x40, W
-	addwf	0x50, W
-	addwf	0x56, W
+	addwfc	0x50, W
+	addwfc	0x56, W
 	movwf	0x11
 	movff	0x55, 0x10
 	movf	0x10, W
@@ -136,7 +136,7 @@ LCD_Multi
 	mulwf	0x13
 	movff	PRODL, 0x31
 	movff	PRODH, 0x30
-	mulwf	0x12
+	mulwf	LCD_0x12
 	movff	PRODL, 0x41	;multiplying and storing each byte separately
 	movff	PRODH, 0x40
 	mulwf	0x11
@@ -146,10 +146,10 @@ LCD_Multi
 	
 	clrf	STATUS
 	movf	0x30, W
-	addwf	0x41, W		    ;adding and storing results in conescutive FRs 
-	movwf	0x12
+	addwfc	0x41, W		    ;adding and storing results in conescutive FRs 
+	movwf	LCD_0x12
 	movf	0x40, W
-	addwf	0x51, W
+	addwfc 	0x51, W
 	movwf	0x11
 	movff	0x50, 0x10
 
@@ -200,7 +200,7 @@ LCD_Loop_message
 ;	call	LCD_Send_Byte_I
 ;	call	LCD_delay_ms
 	return
-;LCD_Loop_message2
+;LCD_Loop_message2                  ;for two line display 
 ;	movf    POSTINC2, W
 ;	call    LCD_Send_Byte_D
 ;	decfsz  LCD_counter2

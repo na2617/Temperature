@@ -1,5 +1,5 @@
 MPLINK 5.09, LINKER
-Linker Map File - Created Mon Nov 18 16:01:38 2019
+Linker Map File - Created Mon Nov 18 16:01:48 2019
 
                                  Section Info
                   Section       Type    Address   Location Size(Bytes)
@@ -10,7 +10,7 @@ Linker Map File - Created Mon Nov 18 16:01:38 2019
                     .code       code   0x000212    program   0x000172
                      main       code   0x000384    program   0x0000b6
                     pdata       code   0x00043a    program   0x000012
-.config_300000_BUILD/DEFAULT/PRODUCTION/TEMPCON    romdata   0x300000    program   0x000001
+.config_300000_BUILD/DEFAULT/DEBUG/TEMPCONTROL.    romdata   0x300000    program   0x000001
                      acs0      udata   0x000000       data   0x000011
                   acs_ovr      udata   0x000011       data   0x000005
                    tables      udata   0x000400       data   0x000080

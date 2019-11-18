@@ -83,7 +83,6 @@ Temp_ReadScratchpad	;start reading data from scratchoad
     
 Temp_ReadTimeSlots	;generate time slots in which sensor gives 0s and 1s
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
     ;call    Serial_to_Parallel
     call    Temp_TimeSlot
@@ -142,7 +141,7 @@ Write0
     movlw   0x33
     movwf   0x20
     call    delay
-   ; movlw   0xA0   These extra delay make it too long 
+   ; movlw   0xA0   These extra delay make it too long - not needed 
     ;movwf   0x20
     ;call    delay
     setf    TRISE
@@ -180,27 +179,6 @@ delay
     bra	    delay
     return
     
-;SPI_MasterInit ; Set Clock edge to negative
-;    bcf SSP2STAT, CKE
-;    ; MSSP enable; CKP=1; SPI master, clock=Fosc/64 (1MHz)
-;    movlw (1<<SSPEN)|(1<<CKP)|(0x02)
-;    movwf SSP2CON1
-;    ; SDO2 output; SCK2 output
-;    bcf TRISE, SDO2
-;    bcf TRISE, SCK2
-;    movf    SDO2, W
-;    movwf   RE6
-;    return
-;    
-;SPI_MasterTransmit ; Start transmission of data (held in W)
-;    movwf SSP2BUF
-;    
-;Wait_Transmit ; Wait for transmission to complete
-;    btfss PIR2, SSP2IF
-;    bra Wait_Transmit
-;    bcf PIR2, SSP2IF ; clear interrupt flag
-;     return
-
     
 bigdelay
     movlw 0x00 ; W=0

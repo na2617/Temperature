@@ -4,7 +4,8 @@
     extern  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT 
     extern  Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM, LCD_Setup
     extern  LCD_Write_Message, LCD_Write_Dec, LCD_1, LCD_.5, LCD_Send_Byte_D
-    extern  LCD_Clear	
+    extern  LCD_Clear, Temp_Write, Write1, Write0,  Temp_ReadTHTL, Temp_LoadTHTL	
+    extern  Temp_SaveTHTL	
 	
 acs0	udata_acs   ; reserve data space in access ram
 counter	    res 1   ; reserve one byte for a counter variable

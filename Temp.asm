@@ -1,6 +1,8 @@
 #include p18f87k22.inc
 	
-    global  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad, Temp_ReadTimeSlots, Temp_SkipROM
+    global  Temp_Read, Temp_setup, Temp_ReadROM, Temp_ConvertT, Temp_ReadScratchpad
+    global  Temp_ReadTimeSlots, Temp_SkipROM, Temp_Write, Write1, Write0, Temp_ReadTHTL
+    global  Temp_SaveTHTL, Temp_LoadTHTL	
 acs0    udata_acs   ; named variables in access ram
 Temp_cnt1   res 1   ; reserve 1 byte for variable LCD_cnt_l
 Temp_cnt2   res 1 
@@ -26,17 +28,81 @@ Temp_setup	    ;reset pulse; should see a presence pulse from sensor
     call    bigdelay
     return 
     
-Temp_Read
-    call	Temp_setup
-    call	Temp_SkipROM
-    call	Temp_ConvertT
+Temp_Read	    ;Read temperature and store in 0x3A file register
+    call    Temp_setup
+    call    Temp_SkipROM
+    call    Temp_ConvertT
+    call    Temp_setup
+    call    Temp_SkipROM
+    call    Temp_ReadScratchpad
+    call    Temp_ReadTimeSlots
+    return
+    
+
+Temp_ReadTHTL			;read bytes 0 to 4 of scratchpad
     call	Temp_setup
     call	Temp_SkipROM
     call	Temp_ReadScratchpad
     call	Temp_ReadTimeSlots
+    call	Temp_ReadTimeSlots
+    call	Temp_ReadTimeSlots
+    call	Temp_ReadTimeSlots
     return
     
-Temp_ReadROM	    
+Temp_SaveTHTL			;Copy TH and TL from scratchpad to EEPROM
+    call	Temp_setup
+    call	Temp_SkipROM
+    call	Temp_CopyScratchpad
+    return	
+    
+Temp_LoadTHTL		    ;Load TH and TL from EEPROM to scratchpad
+    call	Temp_setup
+    call	Temp_SkipROM
+    call	Temp_RecallE
+    return
+    
+Temp_Write		;write to scratchpad
+    call	Temp_setup
+    call	Temp_SkipROM
+    call	Temp_WriteScratchpad
+    return
+  
+Temp_WriteScratchpad	    ;function command 'Write Scratchpad'
+    call	Write0
+    call	Write1
+    call	Write1
+    call	Write1
+    call	Write0
+    call	Write0
+    call	Write1
+    call	Write0
+    return
+   
+    
+Temp_CopyScratchpad	    ;function command 'Copy Scratchpad'
+    call	Write0
+    call	Write0
+    call	Write0
+    call	Write1
+    call	Write0
+    call	Write0
+    call	Write1
+    call	Write0
+    return
+    
+Temp_RecallE		    ;function command 'Recall E^2'
+    call	Write0
+    call	Write0
+    call	Write0
+    call	Write1
+    call	Write1
+    call	Write1
+    call	Write0
+    call	Write1
+    return
+    
+    
+Temp_ReadROM	    ;ROM command to read the slave's ROM code
     call    Write1
     call    Write1
     call    Write0
@@ -84,32 +150,18 @@ Temp_ReadScratchpad	;start reading data from scratchoad
 Temp_ReadTimeSlots	;generate time slots in which sensor gives 0s and 1s
     call    Temp_TimeSlot
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot  
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot  
-    ;call    Serial_to_Parallel
     call    Temp_TimeSlot
-    ;call    Serial_to_Parallel
-    ;call    Temp_TimeSlot
-    ;bcf     STATUS,0	;sets carry to 0
     nop
-    
     return
     
-Serial_to_Parallel
-    movff   POSTINC0,   STATUS
-    ;movff   POSTINC1, 0x90
-    RLCF   0x30
-    return
+
     
-    
+   
     
     
 Temp_TimeSlot		;creates timeslot so it is over the minimum reguired length
@@ -141,9 +193,6 @@ Write0
     movlw   0x33
     movwf   0x20
     call    delay
-   ; movlw   0xA0   These extra delay make it too long - not needed 
-    ;movwf   0x20
-    ;call    delay
     setf    TRISE
     movlw   0x01
     movwf   0x20

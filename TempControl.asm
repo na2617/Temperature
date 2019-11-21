@@ -37,6 +37,29 @@ setup	bcf	EECON1, CFGS	; point to Flash program memory
 	
 	; ******* Main programme ****************************************
 start
+;	call	Temp_Write	;get ready to write to the scratchpad
+;	
+;	call    Write1		   ;Input TH
+;	call    Write1
+;	call    Write1
+;	call    Write1
+;	call    Write1
+;	call    Write1
+;	call    Write1
+;	call    Write1
+;	
+;	call    Write0		    ;Input TL
+;	call    Write0
+;	call    Write0
+;	call    Write0
+;	call    Write0
+;	call    Write0
+;	call    Write0
+;	call    Write0
+;	
+;	
+	;call	Temp_LoadTHTL
+	;call	Temp_ReadTHTL
 	call	Temp_Read
 	lfsr    FSR2, 0x17
 	lfsr	FSR0, 0x3A
@@ -44,7 +67,7 @@ start
 	call	LCD_Write_Dec
 	movff	0x35, Char1
 	movff	0x36, Char2
-	;start of LCD code
+	;*******start of LCD code*******
 	; Output T =
 	lfsr	FSR0, myArray	; Load FSR0 with address in RAM	
 	movlw	upper(myTable)	; address of data in PM

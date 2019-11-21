@@ -125,7 +125,7 @@ Temp_SkipROM		;skip ROM command -> go to function command
     return
     
     
-Temp_ConvertT	    ;use inbuilt adc to store temp in scratchpad
+Temp_ConvertT	    ;use inbuilt adc to store temp in scratchpad byte 0 and 1 
     call    Write0
     call    Write0
     call    Write1
@@ -215,9 +215,6 @@ TimeSlotInit	    ;pulls low to start timeslot
     btfsc   PORTD,RD0	;if RD0 is 0, go to rotate
     bsf     STATUS,0	   ;if RD0 is 1, set carry to 1
     rrcf    0x3A,F,A	;carry-> MSB, then iterate
-    
-    
-    ;movff   PORTD, POSTDEC2
     movlw   0x33
     movwf   0x20
     call    delay	; second delay lets sensor hold the pin low/high to receive 0/1

@@ -1,4 +1,4 @@
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  1
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  1
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
@@ -53,99 +53,122 @@ LOC  OBJECT CODE     LINE SOURCE TEXT
                       00037         
                       00038         ; ******* Main programme ****************************************
 00000C                00039 start
-00000C EC?? F???      00040         call    Temp_Read
-000010 EE20 F017      00041         lfsr    FSR2, 0x17
-000014 EE00 F03A      00042         lfsr    FSR0, 0x3A
-000018 EC?? F???      00043         call    LCD_Clear
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  2
+                      00040         ;       call    Temp_Write      ;get ready to write to the scratchpad
+                      00041 ;       
+                      00042 ;       call    Write1             ;Input TH
+                      00043 ;       call    Write1
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  2
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00001C EC?? F???      00044         call    LCD_Write_Dec
-000020 C035 F???      00045         movff   0x35, Char1
-000024 C036 F???      00046         movff   0x36, Char2
-                      00047         ;start of LCD code
-                      00048         ; Output T =
-000028 EE?? F0??      00049         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
-00002C 0E??           00050         movlw   upper(myTable)  ; address of data in PM
-00002E 6EF8           00051         movwf   TBLPTRU         ; load upper bits to TBLPTRU
-000030 0E??           00052         movlw   high(myTable)   ; address of data in PM
-000032 6EF7           00053         movwf   TBLPTRH         ; load high byte to TBLPTRH
-000034 0E??           00054         movlw   low(myTable)    ; address of data in PM
-000036 6EF6           00055         movwf   TBLPTRL         ; load low byte to TBLPTRL
-000038 0E05           00056         movlw   myTable_l       ; bytes to read
-00003A 6E??           00057         movwf   counter         ; our counter register
-00003C 0009           00058 loop    tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
-00003E CFF5 FFEE      00059         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
-000042 2E??           00060         decfsz  counter         ; count down to zero
-000044 D???           00061         bra     loop            ; keep going until finished
-000046 0E04           00062         movlw   myTable_l-1     ; output message to LCD (leave out "\n")
-000048 EE?? F0??      00063         lfsr    FSR2, myArray
-00004C EC?? F???      00064         call    LCD_Write_Message   
-                      00065         
-000050 0E30           00066         movlw   0x30
-000052 24??           00067         addwf   Char1, W
-000054 EC?? F???      00068         call    LCD_Send_Byte_D 
-000058 0E30           00069         movlw   0x30
-00005A 24??           00070         addwf   Char2, W
-00005C EC?? F???      00071         call    LCD_Send_Byte_D 
-                      00072         
-                      00073         
-000060 EE?? F0??      00074         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
-000064 0E??           00075         movlw   upper(myTabl4)  ; address of data in PM
-000066 6EF8           00076         movwf   TBLPTRU         ; load upper bits to TBLPTRU
-000068 0E??           00077         movlw   high(myTabl4)   ; address of data in PM
-00006A 6EF7           00078         movwf   TBLPTRH         ; load high byte to TBLPTRH
-00006C 0E??           00079         movlw   low(myTabl4)    ; address of data in PM
-00006E 6EF6           00080         movwf   TBLPTRL         ; load low byte to TBLPTRL
-000070 0E05           00081         movlw   myTable_3       ; bytes to read
-000072 6E??           00082         movwf   counter         ; our counter register
-000074 0009           00083 loop2   tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
-000076 CFF5 FFEE      00084         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
-00007A 2E??           00085         decfsz  counter         ; count down to zero
-00007C D???           00086         bra     loop2           ; keep going until finished
-                      00087         
-00007E 0E04           00088         movlw   myTable_3-1     ; output message to LCD (leave out "\n")
-000080 EE?? F0??      00089         lfsr    FSR2, myArray
-000084 EC?? F???      00090         call    LCD_1
-                      00091         
-                      00092         
-                      00093         
-                      00094         
-                      00095         ;output .5 degreesC
-000088 EE?? F0??      00096         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  3
+                      00044 ;       call    Write1
+                      00045 ;       call    Write1
+                      00046 ;       call    Write1
+                      00047 ;       call    Write1
+                      00048 ;       call    Write1
+                      00049 ;       call    Write1
+                      00050 ;       
+                      00051 ;       call    Write0              ;Input TL
+                      00052 ;       call    Write0
+                      00053 ;       call    Write0
+                      00054 ;       call    Write0
+                      00055 ;       call    Write0
+                      00056 ;       call    Write0
+                      00057 ;       call    Write0
+                      00058 ;       call    Write0
+                      00059 ;       
+                      00060 ;       
+                      00061         ;call   Temp_LoadTHTL
+                      00062         ;call   Temp_ReadTHTL
+00000C EC?? F???      00063         call    Temp_Read
+000010 EE20 F017      00064         lfsr    FSR2, 0x17
+000014 EE00 F03A      00065         lfsr    FSR0, 0x3A
+000018 EC?? F???      00066         call    LCD_Clear
+00001C EC?? F???      00067         call    LCD_Write_Dec
+000020 C035 F???      00068         movff   0x35, Char1
+000024 C036 F???      00069         movff   0x36, Char2
+                      00070         ;start of LCD code
+                      00071         ; Output T =
+000028 EE?? F0??      00072         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
+00002C 0E??           00073         movlw   upper(myTable)  ; address of data in PM
+00002E 6EF8           00074         movwf   TBLPTRU         ; load upper bits to TBLPTRU
+000030 0E??           00075         movlw   high(myTable)   ; address of data in PM
+000032 6EF7           00076         movwf   TBLPTRH         ; load high byte to TBLPTRH
+000034 0E??           00077         movlw   low(myTable)    ; address of data in PM
+000036 6EF6           00078         movwf   TBLPTRL         ; load low byte to TBLPTRL
+000038 0E05           00079         movlw   myTable_l       ; bytes to read
+00003A 6E??           00080         movwf   counter         ; our counter register
+00003C 0009           00081 loop    tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
+00003E CFF5 FFEE      00082         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
+000042 2E??           00083         decfsz  counter         ; count down to zero
+000044 D???           00084         bra     loop            ; keep going until finished
+000046 0E04           00085         movlw   myTable_l-1     ; output message to LCD (leave out "\n")
+000048 EE?? F0??      00086         lfsr    FSR2, myArray
+00004C EC?? F???      00087         call    LCD_Write_Message   
+                      00088         
+000050 0E30           00089         movlw   0x30
+000052 24??           00090         addwf   Char1, W
+000054 EC?? F???      00091         call    LCD_Send_Byte_D 
+000058 0E30           00092         movlw   0x30
+00005A 24??           00093         addwf   Char2, W
+00005C EC?? F???      00094         call    LCD_Send_Byte_D 
+                      00095         
+                      00096         
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  3
 
 
 LOC  OBJECT CODE     LINE SOURCE TEXT
   VALUE
 
-00008C 0E??           00097         movlw   upper(myTabl3)  ; address of data in PM
-00008E 6EF8           00098         movwf   TBLPTRU         ; load upper bits to TBLPTRU
-000090 0E??           00099         movlw   high(myTabl3)   ; address of data in PM
-000092 6EF7           00100         movwf   TBLPTRH         ; load high byte to TBLPTRH
-000094 0E??           00101         movlw   low(myTabl3)    ; address of data in PM
-000096 6EF6           00102         movwf   TBLPTRL         ; load low byte to TBLPTRL
-000098 0E05           00103         movlw   myTable_2       ; bytes to read
-00009A 6E??           00104         movwf   counter         ; our counter register
-00009C 0009           00105 loop1   tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
-00009E CFF5 FFEE      00106         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
-0000A2 2E??           00107         decfsz  counter         ; count down to zero
-0000A4 D???           00108         bra     loop1           ; keep going until finished
-                      00109         
-0000A6 0E04           00110         movlw   myTable_2-1     ; output message to LCD (leave out "\n")
-0000A8 EE?? F0??      00111         lfsr    FSR2, myArray
-0000AC EC?? F???      00112         call    LCD_.5
-                      00113         
+000060 EE?? F0??      00097         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
+000064 0E??           00098         movlw   upper(myTabl4)  ; address of data in PM
+000066 6EF8           00099         movwf   TBLPTRU         ; load upper bits to TBLPTRU
+000068 0E??           00100         movlw   high(myTabl4)   ; address of data in PM
+00006A 6EF7           00101         movwf   TBLPTRH         ; load high byte to TBLPTRH
+00006C 0E??           00102         movlw   low(myTabl4)    ; address of data in PM
+00006E 6EF6           00103         movwf   TBLPTRL         ; load low byte to TBLPTRL
+000070 0E05           00104         movlw   myTable_3       ; bytes to read
+000072 6E??           00105         movwf   counter         ; our counter register
+000074 0009           00106 loop2   tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
+000076 CFF5 FFEE      00107         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
+00007A 2E??           00108         decfsz  counter         ; count down to zero
+00007C D???           00109         bra     loop2           ; keep going until finished
+                      00110         
+00007E 0E04           00111         movlw   myTable_3-1     ; output message to LCD (leave out "\n")
+000080 EE?? F0??      00112         lfsr    FSR2, myArray
+000084 EC?? F???      00113         call    LCD_1
                       00114         
                       00115         
-0000B0 EF?? F???      00116         goto    start
-0000B4                00117 stop    
-0000B4 D???           00118         bra     stop
-                      00119         end
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  4
+                      00116         
+                      00117         
+                      00118         ;output .5 degreesC
+000088 EE?? F0??      00119         lfsr    FSR0, myArray   ; Load FSR0 with address in RAM 
+00008C 0E??           00120         movlw   upper(myTabl3)  ; address of data in PM
+00008E 6EF8           00121         movwf   TBLPTRU         ; load upper bits to TBLPTRU
+000090 0E??           00122         movlw   high(myTabl3)   ; address of data in PM
+000092 6EF7           00123         movwf   TBLPTRH         ; load high byte to TBLPTRH
+000094 0E??           00124         movlw   low(myTabl3)    ; address of data in PM
+000096 6EF6           00125         movwf   TBLPTRL         ; load low byte to TBLPTRL
+000098 0E05           00126         movlw   myTable_2       ; bytes to read
+00009A 6E??           00127         movwf   counter         ; our counter register
+00009C 0009           00128 loop1   tblrd*+                 ; one byte from PM to TABLAT, increment TBLPRT
+00009E CFF5 FFEE      00129         movff   TABLAT, POSTINC0; move data from TABLAT to (FSR0), inc FSR0     
+0000A2 2E??           00130         decfsz  counter         ; count down to zero
+0000A4 D???           00131         bra     loop1           ; keep going until finished
+                      00132         
+0000A6 0E04           00133         movlw   myTable_2-1     ; output message to LCD (leave out "\n")
+0000A8 EE?? F0??      00134         lfsr    FSR2, myArray
+0000AC EC?? F???      00135         call    LCD_.5
+                      00136         
+                      00137         
+                      00138         
+0000B0 EF?? F???      00139         goto    start
+0000B4                00140 stop    
+0000B4 D???           00141         bra     stop
+                      00142         end
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  4
 
 
 SYMBOL TABLE
@@ -204,7 +227,7 @@ ADMSK5                            00000005
 ADON                              00000000
 ADRES                             00000FC3
 ADRESH                            00000FC4
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  5
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  5
 
 
 SYMBOL TABLE
@@ -263,7 +286,7 @@ ANSEL16                           00000000
 ANSEL17                           00000001
 ANSEL18                           00000002
 ANSEL19                           00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  6
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  6
 
 
 SYMBOL TABLE
@@ -322,7 +345,7 @@ C1TSEL0                           00000000
 C1TSEL1                           00000001
 C1TSEL2                           00000002
 C2INA                             00000004
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  7
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  7
 
 
 SYMBOL TABLE
@@ -381,7 +404,7 @@ CCP1IP                            00000001
 CCP1M0                            00000000
 CCP1M1                            00000001
 CCP1M2                            00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  8
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  8
 
 
 SYMBOL TABLE
@@ -440,7 +463,7 @@ CCP5M0                            00000000
 CCP5M1                            00000001
 CCP5M2                            00000002
 CCP5M3                            00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE  9
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE  9
 
 
 SYMBOL TABLE
@@ -499,7 +522,7 @@ CCP9IP                            00000006
 CCP9M0                            00000000
 CCP9M1                            00000001
 CCP9M2                            00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 10
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 10
 
 
 SYMBOL TABLE
@@ -558,7 +581,7 @@ CHSN1                             00000001
 CHSN2                             00000002
 CK1                               00000006
 CK2                               00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 11
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 11
 
 
 SYMBOL TABLE
@@ -617,7 +640,7 @@ CTMUIE                            00000003
 CTMUIF                            00000003
 CTMUIP                            00000003
 CTMUMD                            00000006
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 12
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 12
 
 
 SYMBOL TABLE
@@ -676,7 +699,7 @@ ECCP1AS                           00000FBF
 ECCP1AS0                          00000004
 ECCP1AS1                          00000005
 ECCP1AS2                          00000006
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 13
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 13
 
 
 SYMBOL TABLE
@@ -735,7 +758,7 @@ FSR1L                             00000FE1
 FSR2                              00000002
 FSR2H                             00000FDA
 FSR2L                             00000FD9
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 14
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 14
 
 
 SYMBOL TABLE
@@ -794,7 +817,7 @@ INT3                              00000003
 INT3E                             00000005
 INT3F                             00000002
 INT3IE                            00000005
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 15
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 15
 
 
 SYMBOL TABLE
@@ -853,7 +876,7 @@ LATB5                             00000005
 LATB6                             00000006
 LATB7                             00000007
 LATC                              00000F8B
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 16
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 16
 
 
 SYMBOL TABLE
@@ -912,7 +935,7 @@ LATJ                              00000F91
 LATJ0                             00000000
 LATJ1                             00000001
 LATJ2                             00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 17
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 17
 
 
 SYMBOL TABLE
@@ -971,7 +994,7 @@ NOT_TO                            00000003
 NOT_TX8                           00000006
 NOT_W                             00000002
 NOT_WR                            00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 18
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 18
 
 
 SYMBOL TABLE
@@ -1030,7 +1053,7 @@ P3C                               00000003
 P3DC0                             00000000
 P3DC1                             00000001
 P3DC2                             00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 19
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 19
 
 
 SYMBOL TABLE
@@ -1089,7 +1112,7 @@ PORTC                             00000F82
 PORTD                             00000F83
 PORTE                             00000F84
 PORTF                             00000F85
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 20
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 20
 
 
 SYMBOL TABLE
@@ -1148,7 +1171,7 @@ PSTR2CON                          00000F1B
 PSTR3CON                          00000F1A
 PWM1CON                           00000FBE
 PWM2CON                           00000F51
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 21
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 21
 
 
 SYMBOL TABLE
@@ -1207,7 +1230,7 @@ RCSTA2                            00000F22
 RD                                00000000
 RD0                               00000000
 RD1                               00000001
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 22
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 22
 
 
 SYMBOL TABLE
@@ -1266,7 +1289,7 @@ RJ6                               00000006
 RJ7                               00000007
 RJPU                              00000005
 RODIV0                            00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 23
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 23
 
 
 SYMBOL TABLE
@@ -1325,7 +1348,7 @@ SDO1                              00000005
 SDO2                              00000004
 SEN                               00000000
 SENDB                             00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 24
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 24
 
 
 SYMBOL TABLE
@@ -1384,7 +1407,7 @@ SSPBUF                            00000FC9
 SSPCON1                           00000FC6
 SSPCON2                           00000FC5
 SSPEN                             00000005
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 25
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 25
 
 
 SYMBOL TABLE
@@ -1443,7 +1466,7 @@ T1CKI                             00000005
 T1CKPS0                           00000004
 T1CKPS1                           00000005
 T1CON                             00000FCD
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 26
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 26
 
 
 SYMBOL TABLE
@@ -1502,7 +1525,7 @@ T5GSS1                            00000001
 T5GTM                             00000005
 T5GVAL                            00000002
 T6CKPS0                           00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 27
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 27
 
 
 SYMBOL TABLE
@@ -1561,7 +1584,7 @@ TMR12IF                           00000006
 TMR12IP                           00000006
 TMR12MD                           00000000
 TMR12ON                           00000002
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 28
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 28
 
 
 SYMBOL TABLE
@@ -1620,7 +1643,7 @@ TMR5IP                            00000001
 TMR5L                             00000F7C
 TMR5MD                            00000003
 TMR5ON                            00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 29
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 29
 
 
 SYMBOL TABLE
@@ -1679,7 +1702,7 @@ TRISB6                            00000006
 TRISB7                            00000007
 TRISC                             00000F94
 TRISC0                            00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 30
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 30
 
 
 SYMBOL TABLE
@@ -1738,7 +1761,7 @@ TRISJ0                            00000000
 TRISJ1                            00000001
 TRISJ2                            00000002
 TRISJ3                            00000003
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 31
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 31
 
 
 SYMBOL TABLE
@@ -1797,7 +1820,7 @@ Temp_SaveTHTL                     00000000
 Temp_SkipROM                      00000000
 Temp_Write                        00000000
 Temp_setup                        00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 32
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 32
 
 
 SYMBOL TABLE
@@ -1856,7 +1879,7 @@ _BORV_2_2L                        000000F7
 _BORV_3_2L                        000000FF
 _BW_16_3L                         000000FF
 _BW_8_3L                          000000BF
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 33
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 33
 
 
 SYMBOL TABLE
@@ -1915,7 +1938,7 @@ _EBRT4_OFF_7L                     000000FF
 _EBRT4_ON_7L                      000000EF
 _EBRT5_OFF_7L                     000000FF
 _EBRT5_ON_7L                      000000DF
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 34
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 34
 
 
 SYMBOL TABLE
@@ -1974,7 +1997,7 @@ _SOSCSEL_HIGH_1L                  000000FF
 _SOSCSEL_LOW_1L                   000000EF
 _STVREN_OFF_4L                    000000FE
 _STVREN_ON_4L                     000000FF
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 35
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 35
 
 
 SYMBOL TABLE
@@ -2033,7 +2056,7 @@ _XINST_OFF_1L                     000000BF
 _XINST_ON_1L                      000000FF
 __18F87K22                        00000001
 counter                           00000000
-MPASM 5.81                   TEMPCONTROL.ASM   11-20-2019  16:12:12         PAGE 36
+MPASM 5.81                   TEMPCONTROL.ASM   11-21-2019  13:30:17         PAGE 36
 
 
 SYMBOL TABLE
